@@ -25,7 +25,7 @@
         <a  class="btn {{ _action.css_class|default('') }} pull-right"
             onClick="formModal.init('{{ path('admin', _request_parameters|merge({ action: _action.name })) }}')">
             {% if _action.icon %}<i class="fa fa-{{ _action.icon }}"></i>{% endif %}
-            {{ 'action.new'|trans }}
+            {{ 'action.new.label'|trans }}
         </a>
     </div>
 {% endblock new_action %}
