@@ -1,6 +1,6 @@
 action:
     new:
-        label: Nouveau
+        label: Créer
         validate: Valider
     show:
         tooltip: Afficher
