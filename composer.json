@@ -1,0 +1,6 @@
+{
+    "name": "a5sys/easyadminpopup-bundle",
+    "autoload": {
+        "psr-4": { "A5sys\\EasyAdminPopupBundle\\": "" }
+    }
+}
