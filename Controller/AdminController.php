@@ -1,0 +1,494 @@
+<?php
+
+namespace A5sys\EasyAdminPopupBundle\Controller;
+
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use JavierEguiluz\Bundle\EasyAdminBundle\Controller\AdminController as BaseAdminController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Form\FormBuilder;
+use tbn\JsonAnnotationBundle\Configuration\Json;
+use JavierEguiluz\Bundle\EasyAdminBundle\Event\EasyAdminEvents;
+use Pagerfanta\Pagerfanta;
+use Pagerfanta\Adapter\DoctrineORMAdapter;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\EntityNotFoundException;
+
+/**
+ *
+ * @author Thomas BEAUJEAN
+ *
+ */
+class AdminController extends BaseAdminController
+{
+    /**
+     * @Route("/json/", name="admin_json")
+     *
+     * @param Request $request
+     *
+     * @Json
+     *
+     * @return array
+     */
+    public function indexJsonAction(Request $request)
+    {
+        $adminResponse = $this->indexAction($request);
+
+        $html = null;
+        $redirect = null;
+
+        if ($adminResponse instanceof RedirectResponse) {
+            $redirect = $adminResponse->getTargetUrl();
+        } else {
+            $html = $adminResponse->getContent();
+        }
+
+        return array('html' => $html, 'redirect' => $redirect);
+    }
+
+    /**
+     *
+     * @param type  $data
+     * @param array $options
+     * @return type
+     */
+    public function createFormBuilder($data = null, array $options = array())
+    {
+        $formBuilder = parent::createFormBuilder($data, $options);
+
+        $url = $this->getFormUrl($options);
+
+        if ($url !== null) {
+             $formBuilder->setAction($url);
+        }
+
+        return $formBuilder;
+    }
+
+    /**
+     * Get an url by the options of the form
+     *
+     * @param arrau $options
+     *
+     * @return string The url
+     */
+    protected function getFormUrl($options)
+    {
+        $url = null;
+
+        //there might not be any options
+        //case of the delete form
+        if (isset($options['attr']['id'])) {
+            //get the form id
+            $formId = $options['attr']['id'];
+
+            //the form id is composed of $view-form
+            list($view)  = explode('-', $formId);
+            $id = $this->request->query->get('id');
+            //custom URL for ajax
+            $urlParameters = array(
+                'action' => $view,
+                'entity' => $this->entity['name'],
+                'id' => $id,
+            );
+
+            $url = $this->generateUrl('admin_json', $urlParameters);
+        }
+
+        return $url;
+    }
+
+    /**
+     * Utility method which initializes the configuration of the entity on which
+     * the user is performing the action.
+     *
+     * @param Request $request
+     *
+     * @return null
+     */
+    protected function initialize(Request $request)
+    {
+        parent::initialize($request);
+
+        //the admin controller parent uses the ajax property to toggle a property
+        //but we uses the ajax to post form
+        //so we simulate the fact that all post are standart post
+        if ($this->request) {
+            $this->request->headers->remove('X-Requested-With');
+        }
+    }
+
+    /**
+     * Creates the form used to delete an entity. It must be a form because
+     * the deletion of the entity are always performed with the 'DELETE' HTTP method,
+     * which requires a form to work in the current browsers.
+     *
+     * @param string $entityName
+     * @param int    $entityId
+     *
+     * @return Form
+     */
+    protected function createDeleteForm($entityName, $entityId)
+    {
+        return $this->createFormBuilder()
+            ->setAction($this->generateUrl('admin_json', array('action' => 'delete', 'entity' => $entityName, 'id' => $entityId)))
+            ->setMethod('DELETE')
+            ->getForm()
+        ;
+    }
+
+    /**
+     * The method that is executed when the user performs a 'delete' action to
+     * remove any entity.
+     *
+     * @return RedirectResponse
+     */
+    protected function deleteAction()
+    {
+        $return = null;
+
+        $id = $this->request->query->get('id');
+        if (!$entity = $this->em->getRepository($this->entity['class'])->find($id)) {
+            throw new EntityNotFoundException(array('action' => 'delete', 'entity' => $this->entity, 'entity_id' => $id));
+        }
+
+        $fields = $this->entity['edit']['fields'];
+
+        $form = $this->createDeleteForm($this->entity['name'], $id);
+        $form->handleRequest($this->request);
+
+        if ('DELETE' === $this->request->getMethod()) {
+            $this->dispatch(EasyAdminEvents::PRE_DELETE);
+
+            if ($form->isValid()) {
+                $this->dispatch(EasyAdminEvents::PRE_REMOVE, array('entity' => $entity));
+
+                if (method_exists($this, $customMethodName = 'preRemove'.$this->entity['name'].'Entity')) {
+                    $this->{$customMethodName}($entity);
+                } else {
+                    $this->preRemoveEntity($entity);
+                }
+
+                $this->em->remove($entity);
+                $this->em->flush();
+
+                $this->dispatch(EasyAdminEvents::POST_REMOVE, array('entity' => $entity));
+
+                $return = $this->redirect($this->generateUrl('admin', array('action' => 'list', 'entity' => $this->entity['name'])));
+            }
+
+            $this->dispatch(EasyAdminEvents::POST_DELETE);
+        } else {
+            $return = $this->render("@EasyAdminPopup/default/delete.html.twig", array(
+                'form'          => $form->createView(),
+                'entity_fields' => $fields,
+                'entity'        => $entity,
+            ));
+        }
+
+        return $return;
+    }
+
+    /**
+     * The method that is executed when the user performs a 'list' action on an entity.
+     *
+     * @return Response
+     */
+    protected function listAction()
+    {
+        $this->dispatch(EasyAdminEvents::PRE_LIST);
+
+        $fields = $this->entity['list']['fields'];
+        $paginator = $this->findAll($this->entity['class'], $this->request->query->get('page', 1), $this->config['list']['max_results'], $this->request->query->get('sortField'), $this->request->query->get('sortDirection'));
+
+        $this->dispatch(EasyAdminEvents::POST_LIST, array('paginator' => $paginator));
+
+        $searchForm =  $this->createSearchForm();
+
+        return $this->render($this->entity['templates']['list'], array(
+            'paginator' => $paginator,
+            'fields'    => $fields,
+            'searchForm' => $searchForm->createView(),
+        ));
+    }
+
+    /**
+     * Performs a database query based on the search query provided by the user.
+     * It supports pagination and field sorting.
+     *
+     * @param string $entityClass
+     * @param string $searchQuery
+     * @param array  $searchableFields
+     * @param int    $page
+     * @param int    $maxPerPage
+     *
+     * @return Pagerfanta The paginated query results
+     */
+    protected function findBy($entityClass, $searchQuery, array $searchableFields, $page = 1, $maxPerPage = 15)
+    {
+        $queryBuilder = $this->em->createQueryBuilder()->select('entity')->from($entityClass, 'entity');
+
+        $queryConditions = $queryBuilder->expr()->orX();
+        $queryParameters = array();
+
+        foreach ($searchableFields as $name => $metadata) {
+            $search = $searchQuery[$name];
+
+            if ($search !== null) {
+                $this->addFilterToFindBy($queryBuilder, $metadata, $name, $search);
+            }
+        }
+
+        $paginator = new Pagerfanta(new DoctrineORMAdapter($queryBuilder, false));
+        $paginator->setMaxPerPage($maxPerPage);
+        $paginator->setCurrentPage($page);
+
+        return $paginator;
+    }
+
+    /**
+     * Add a filter for the search action
+     *
+     * @param QueryBuilder $qb
+     * @param array        $metadata
+     * @param string       $name
+     * @param array        $search
+     */
+    protected function addFilterToFindBy(QueryBuilder $queryBuilder, array $metadata, $name, $search)
+    {
+        if ($metadata['dataType'] === 'association') {
+            $id = $search->getId();
+            $queryBuilder->leftJoin('entity.'.$name, $name);
+            $queryBuilder->andWhere($name.'.id = :'.$name);
+            $queryBuilder->setParameter($name, $id);
+        } elseif (in_array($metadata['type'], array('text', 'string'))) {
+            $queryBuilder->andWhere('entity.'.$name.' LIKE :'.$name);
+            $queryBuilder->setParameter($name, '%'.$search.'%');
+        } else {
+            $queryBuilder->andWhere('entity.'.$name.' IN (:'.$name.')');
+            $queryBuilder->setParameter($name, $search);
+        }
+    }
+
+    /**
+     * The method that is executed when the user performs a query on an entity.
+     *
+     * @return Response
+     */
+    protected function searchAction()
+    {
+        $this->dispatch(EasyAdminEvents::PRE_SEARCH);
+
+        $searchableFields = $this->entity['search']['fields'];
+
+        $searchForm =  $this->createSearchForm();
+        $searchForm->handleRequest($this->request);
+        $searchData = $searchForm->getData();
+
+        $paginator = $this->findBy($this->entity['class'], $searchData, $searchableFields, $this->request->query->get('page', 1), $this->config['list']['max_results']);
+
+        $fields = $this->entity['list']['fields'];
+
+        $this->dispatch(EasyAdminEvents::POST_SEARCH, array(
+            'fields' => $fields,
+            'paginator' => $paginator,
+        ));
+
+        return $this->render($this->entity['templates']['list'], array(
+            'paginator' => $paginator,
+            'fields'    => $fields,
+            'searchForm' => $searchForm->createView(),
+        ));
+    }
+
+    /**
+     * Creates the form used to create or edit an entity.
+     *
+     * @param object $entity
+     * @param array  $entityProperties
+     * @param string $view             The name of the view where this form is used ('new' or 'edit')
+     *
+     * @return Form
+     */
+    protected function createSearchForm()
+    {
+        $view = 'search';
+        $entityProperties = $this->entity['search']['fields'];
+
+        $formCssClass = array_reduce($this->config['design']['form_theme'], function ($previousClass, $formTheme) {
+            return sprintf('theme-%s %s', strtolower(str_replace('.html.twig', '', basename($formTheme))), $previousClass);
+        });
+
+        $formBuilder = $this->get('form.factory')->createNamedBuilder('search', 'form', array(
+            'attr' => array('class' => $formCssClass, 'id' => $view.'-form'),
+        ));
+
+        foreach ($entityProperties as $name => $metadata) {
+            $this->addSearchFormField($name, $metadata, $formBuilder);
+        }
+
+        $url = $this->getSearchFormUrl();
+
+        $formBuilder->setAction($url);
+
+        return $formBuilder->getForm();
+    }
+
+    /**
+     * Add a field for a search form
+     *
+     * @param type        $name
+     * @param array       $metadata
+     * @param FormBuilder $formBuilder
+     */
+    protected function addSearchFormField($name, array $metadata, FormBuilder $formBuilder)
+    {
+        $addField = true;
+
+        if ('association' === $metadata['fieldType'] && in_array($metadata['associationType'], array(ClassMetadataInfo::ONE_TO_MANY, ClassMetadataInfo::MANY_TO_MANY))) {
+            $addField = false;
+        }
+
+        if ($addField) {
+            if (isset($metadata['targetEntity']) && $metadata['targetEntity'] !== null) {
+                $fieldType = 'entity';
+            } elseif ('date' === $metadata['type']) {
+                $fieldType = 'date';
+            } else {
+                $fieldType = $metadata['fieldType'];
+            }
+
+            $formFieldOptions = $this->getSearchFormFieldOptions($name, $metadata, $fieldType);
+
+            $formBuilder->add($name, $fieldType, $formFieldOptions);
+        }
+    }
+
+    /**
+     * Get the url for a search form
+     *
+     * @return strin The url
+     */
+    protected function getSearchFormUrl()
+    {
+        $urlParameters = array(
+            'action' => 'search',
+            'entity' => $this->entity['name'],
+        );
+
+        $url = $this->generateUrl('admin', $urlParameters);
+
+        return $url;
+    }
+
+    /**
+     * Get field options for a search form field
+     *
+     * @param string $name      The field name
+     * @param array  $metadata  The field metadata
+     * @param string $fieldType The field type
+     *
+     * @return array The fieldOptions
+     */
+    protected function getSearchFormFieldOptions($name, $metadata, $fieldType)
+    {
+        $formFieldOptions = array();
+
+        $translator = $this->get('translator');
+
+        if (isset($metadata['targetEntity']) && $metadata['targetEntity'] !== null) {
+            $formFieldOptions['class'] = $metadata['targetEntity'];
+            $formFieldOptions['attr']['field_type'] = $fieldType;
+        } else {
+            $formFieldOptions['attr']['field_type'] = $fieldType;
+        }
+
+        $formFieldOptions['attr']['field_type'] = $fieldType;
+        $formFieldOptions['attr']['field_css_class'] = $metadata['class'];
+        $formFieldOptions['attr']['field_help'] = $metadata['help'];
+        $formFieldOptions['required'] = false;
+
+        //translate field label
+        $labelIndex = $this->entity['search']['fields'][$name]['label'];
+
+        $label = $translator->trans(/** @Ignore */$labelIndex, [], 'EasyAdminBundle');
+        $formFieldOptions['label'] = $label;
+
+        return $formFieldOptions;
+    }
+
+    /**
+     * Creates the form used to create or edit an entity.
+     *
+     * @param object $entity
+     * @param array  $entityProperties
+     * @param string $view             The name of the view where this form is used ('new' or 'edit')
+     *
+     * @return Form
+     */
+    protected function createEntityForm($entity, array $entityProperties, $view)
+    {
+        $formCssClass = array_reduce($this->config['design']['form_theme'], function ($previousClass, $formTheme) {
+            return sprintf('theme-%s %s', strtolower(str_replace('.html.twig', '', basename($formTheme))), $previousClass);
+        });
+
+        $formBuilder = $this->createFormBuilder($entity, array(
+            'data_class' => $this->entity['class'],
+            'attr' => array('class' => $formCssClass, 'id' => $view.'-form'),
+        ));
+
+        foreach ($entityProperties as $name => $metadata) {
+            $this->createEntityFormField($formBuilder, $name, $metadata);
+        }
+
+        return $formBuilder->getForm();
+    }
+
+    /**
+     * Create a field for a create form
+     *
+     * @param FormBuilder $formBuilder
+     * @param string        $name
+     * @param array       $metadata
+     * @return null
+     */
+    protected function createEntityFormField(FormBuilder $formBuilder, $name, array $metadata)
+    {
+        $formFieldOptions = array();
+
+        $fieldType = $metadata['fieldType'];
+
+        if ('association' === $formFieldOptions && in_array($metadata['associationType'], array(ClassMetadataInfo::ONE_TO_MANY, ClassMetadataInfo::MANY_TO_MANY))) {
+            return;
+        }
+
+        if ('collection' === $formFieldOptions) {
+            $formFieldOptions = array('allow_add' => true, 'allow_delete' => true);
+
+            if (version_compare(\Symfony\Component\HttpKernel\Kernel::VERSION, '2.5.0', '>=')) {
+                $formFieldOptions['delete_empty'] = true;
+            }
+        }
+
+        //if the repeated options has been activated
+        if (isset($metadata['repeated']) && (true === $metadata['repeated'])) {
+            $fieldType = 'repeated';
+            $formFieldOptions = $this->getFieldRepeatedOptions($metadata);
+        }
+
+        if ('date' === $fieldType) {
+            $fieldType = null;
+            $formFieldOptions = array(
+                'widget' => 'single_text',
+                'datepicker' => true,
+            );
+        }
+
+        $formFieldOptions['attr']['field_type'] = $fieldType;
+
+        $formFieldOptions['attr']['field_css_class'] = $metadata['class'];
+        $formFieldOptions['attr']['field_help'] = $metadata['help'];
+
+        $formBuilder->add($name, $fieldType, $formFieldOptions);
+    }
+}

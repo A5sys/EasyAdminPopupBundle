@@ -1,0 +1,18 @@
+action:
+    new:
+        validate: Valider
+    show:
+        tooltip: Afficher
+    edit:
+        tooltip: Editer
+        validate: Valider
+    delete:
+        tooltip: Supprimer
+        validate: Valider
+    search_reset:
+        tooltip: Réinitialiser les filtres
+flash:
+    entity:
+        remove: L'élément %entity% a été supprimé
+        persist: L'élément %entity% a été créé
+        update: L'élément %entity% a été modifié

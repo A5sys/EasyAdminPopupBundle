@@ -1,0 +1,18 @@
+services:
+    easy_admin_popup.listener.crud_flashbag:
+        class: A5sys\EasyAdminPopupBundle\Listener\CrudFlashbagListener
+        arguments:
+            - "@session"
+            - "@translator"
+        tags:
+            - { name: kernel.event_listener, event: "easy_admin.post_persist", method: onPostPersist }
+            - { name: kernel.event_listener, event: "easy_admin.post_update", method: onPostUpdate }
+            - { name: kernel.event_listener, event: "easy_admin.post_remove", method: onPostRemove }
+    admin.translation.entity_extractor:
+        class: "A5sys\\EasyAdminPopupBundle\\Translation\\EntityExtractor"
+        arguments:
+            - "%easyadmin.config%"
+            - "EasyAdminBundle"
+            - "@easyadmin.translation.entity_translation"
+        tags:
+            -  { name: jms_translation.extractor, alias: "adminbundle_translation_entity_extractor" }

@@ -1,0 +1,41 @@
+{% trans_default_domain "EasyAdminBundle" %}
+
+{% set _entity_config = easyadmin_entity(app.request.query.get('entity')) %}
+{% set _entity_id = attribute(entity, _entity_config.primary_key_field_name) %}
+{% set _trans_parameters = { '%entity_name%': _entity_config.name|trans, '%entity_label%': _entity_config.label|trans, '%entity_id%': _entity_id } %}
+
+{% extends '@EasyAdminPopup/base_modal.html.twig' %}
+
+{% block content %}
+    {% block main %}
+        <div class="form-horizontal">
+            {% for field, metadata in fields %}
+                <div class="form-group field-{{ metadata.type|default('default')|lower }} {{ metadata.css_class|default('') }}">
+                    <label class="col-sm-2 control-label">
+                        {% if metadata.label %}
+                            {{ metadata.label|trans }}
+                        {% else %}
+                            {{ field|humanize }}
+                        {% endif %}
+                    </label>
+                    <div class="col-sm-10">
+                        <div class="form-control">
+                            {{ easyadmin_render_field_for_show_view(_entity_config.name, entity, metadata) }}
+                        </div>
+
+                        {% if metadata.help|default('') != '' %}
+                            <span class="help-block"><i class="fa fa-info-circle"></i> {{ metadata.help|trans|raw }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="form-group">
+                {% block item_actions %}
+                    <div class='pull-right'>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">{{ 'action.close'|trans }}</button>
+                    </div>
+                {% endblock %}
+            </div>
+        </div>
+    {% endblock %}
+{% endblock %}

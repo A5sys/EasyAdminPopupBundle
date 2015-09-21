@@ -1,0 +1,19 @@
+{% trans_default_domain "EasyAdminBundle" %}
+
+{% if 'method' == _action.type %}
+    {% set _action_href = path('admin', _request_parameters|merge({ action: _action.name, id: _item_id })) %}
+{% elseif 'route' == _action.type %}
+    {% set _action_href = path(_action.name, _request_parameters|merge({ action: _action.name, id: _item_id })) %}
+{% endif %}
+
+<a  class="btn-{{ _action.name }}"
+    data-toggle="tooltip"
+    data-placement="{% if action.help_position is defined %}{{ action.help_position }}{% else %}left{% endif %}"
+    data-original-title="{{ ("action."~action.name~".tooltip")|trans }}"
+    {% if action.modal is defined and not(action.modal) %}
+        href="{{ _action_href }}">
+    {% else %}
+        onClick="formModal.init('{{ _action_href }}')">
+    {% endif %}
+    <i class="fa fa-{{ action.icon }}"></i>
+</a>

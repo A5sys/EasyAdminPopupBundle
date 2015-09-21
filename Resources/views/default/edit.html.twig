@@ -1,0 +1,15 @@
+{% form_theme form with easyadmin_config('design.form_theme') %}
+{% trans_default_domain "EasyAdminBundle" %}
+{% set _entity_config = easyadmin_entity(app.request.query.get('entity')) %}
+{% set _entity_id = attribute(entity, _entity_config.primary_key_field_name) %}
+{% set _trans_parameters = { '%entity_name%': _entity_config.name|trans, '%entity_label%': _entity_config.label|trans, '%entity_id%': _entity_id } %}
+
+{% extends '@EasyAdminPopup/base_modal.html.twig' %}
+
+{% block content %}
+    {% block main %}
+        {% block entity_form %}
+            {{ include(_entity_config.templates.form, { view: 'edit' }) }}
+        {% endblock entity_form %}
+    {% endblock %}
+{% endblock %}

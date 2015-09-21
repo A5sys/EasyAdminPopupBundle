@@ -1,0 +1,64 @@
+{% extends '@EasyAdmin/default/list.html.twig' %}
+
+{% trans_default_domain "EasyAdminBundle" %}
+
+{% block content %}
+    {% for flashMessage in app.session.flashbag.get('notice') %}
+        <div class="flash-notice">
+            {{ flashMessage }}
+        </div>
+    {% endfor %}
+    {{ parent() }}
+{% endblock %}
+
+{% block content_title %}
+    {% if 'search' == app.request.get('action') %}
+        {{ 'search.page_title'|transchoice(paginator.nbResults)|raw }}
+    {% else %}
+        {{ (_entity_config.name~'.list.title')|trans }}
+    {% endif %}
+{% endblock %}
+
+{% block new_action %}
+    {% set _action = easyadmin_get_action_for_list_view('new', _entity_config.name) %}
+    <div id="content-actions">
+        <a  class="btn {{ _action.css_class|default('') }} pull-right"
+            onClick="formModal.init('{{ path('admin', _request_parameters|merge({ action: _action.name })) }}')">
+            {% if _action.icon %}<i class="fa fa-{{ _action.icon }}"></i>{% endif %}
+            {{ 'action.new'|trans }}
+        </a>
+    </div>
+{% endblock new_action %}
+
+{% block item_actions %}
+    {% spaceless %}
+        {% for _action in _list_item_actions %}
+            {% embed '@EasyAdminPopup/default/actions/default.html.twig' with {action:  _action, id: _item_id} %} {% endembed %}
+        {% endfor %}
+
+        {% set _action_href = path('admin', _request_parameters|merge({ action: 'delete', id: _item_id })) %}
+
+        <a onClick="formModal.init('{{ _action_href }}')"
+            data-toggle="tooltip"
+            data-placement="right"
+            data-original-title="{{ ("action.delete.tooltip")|trans }}">
+            <i class="fa fa-remove"></i>
+        </a>
+    {% endspaceless %}
+{% endblock item_actions %}
+
+{% block search_action %}
+
+{% set _action = easyadmin_get_action_for_list_view('search', _entity_config.name) %}
+
+{{ form_start(searchForm) }}
+    <input type="submit" />
+    {# reset filter redirecting to the list #}
+    <a href="{{ path('admin', _request_parameters|merge({ action: 'list' })) }}"
+       data-toggle="tooltip"
+       data-original-title="{{ ("action.search_reset.tooltip")|trans }}">
+        <i class="fa fa-undo"></i>
+    </a>
+{{ form_end(searchForm) }}
+
+{% endblock search_action %}

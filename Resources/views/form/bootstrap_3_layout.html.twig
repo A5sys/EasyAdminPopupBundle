@@ -1,0 +1,40 @@
+{% extends "@EasyAdmin/form/bootstrap_3_horizontal_layout.html.twig" %}
+{% trans_default_domain "EasyAdminBundle" %}
+
+{# Widgets #}
+
+{# Restore the mopa widget for date #}
+{# I do not know this one has been overriden by EasyAdmin #}
+{% block date_widget %}
+{% spaceless %}
+{% if widget == 'single_text' %}
+    {% if datepicker is defined %}
+        {% set widget_addon_icon = widget_addon_append.icon is defined ? widget_addon_append.icon : 'calendar'  %}
+        <div {% if datepicker.attr is defined %}{%- for attrname, attrvalue in datepicker.attr %}{{ attrname }}="{{ attrvalue }}" {% endfor %}{% endif %} data-provider="datepicker" class="input-group date" data-date="{{ value }}" data-link-field="{{ id }}" data-link-format="yyyy-mm-dd">
+            <input type="hidden" value="{{ value }}" {{ block('widget_attributes') }}>
+            {% if widget_reset_icon is defined and widget_reset_icon == true %}
+                <span class="input-group-addon">{{ mopa_bootstrap_icon('remove') }}</span>
+            {% endif %}
+            {# Clear the id & name attributes so that they don't override the hidden fields values #}
+            {% set id = id ~ '_mopa_picker_display' %}
+            {% set full_name = null %}
+            {% set type = 'text' %}
+            {{ block('form_widget_simple') }}
+            <span class="input-group-addon">{{ mopa_bootstrap_icon(widget_addon_icon) }}</span>
+        </div>
+    {% else %}
+        {{ block('form_widget_simple') }}
+    {% endif %}
+{% else %}
+    {% set attr = attr|merge({'class': attr.class|default('inline')}) %}
+    	<div class="row">
+        {{ date_pattern|replace({
+            '{{ year }}':  '<div class="'~date_wrapper_class['year']|default('col-xs-4')~'">'~form_widget(form.year, {'attr': {'class': attr.widget_class|default('') ~ ''}})~'</div>',
+            '{{ month }}': '<div class="'~date_wrapper_class['month']|default('col-xs-4')~'">'~form_widget(form.month, {'attr': {'class': attr.widget_class|default('') ~ ''}})~'</div>',
+            '{{ day }}':   '<div class="'~date_wrapper_class['day']|default('col-xs-4')~'">'~form_widget(form.day, {'attr': {'class': attr.widget_class|default('') ~ ''}})~'</div>',
+        })|raw }}
+        </div>
+{% endif %}
+{% endspaceless %}
+{% endblock date_widget %}
+

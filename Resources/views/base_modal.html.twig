@@ -1,0 +1,18 @@
+{% trans_default_domain "EasyAdminBundle" %}
+{% set _entity_config = easyadmin_entity(app.request.query.get('entity')) %}
+
+ <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="popup-modal">
+        {% block modal_title %}
+            {{ (_entity_config.name~'.'~app.request.get('action')~'.title')|trans }}
+        {% endblock %}
+    </h4>
+</div>
+<div class="modal-body">
+    {% block content %}{% endblock %}
+</div>
+
+<script type="text/javascript">
+    formModal.initForm();
+</script>
