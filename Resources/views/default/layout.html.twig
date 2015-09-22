@@ -1,44 +1,43 @@
-{% extends '::admin_layout.html.twig' %}
+{% set _layout = easyadminpopup_layout() %}
+
+{% extends _layout %}
 
 {% block body %}
 <div id="{% block body_id %}{% endblock %}" class="easyadmin {% block body_class %}{% endblock %}">
-<div id="wrapper" class="container">
-    {% block wrapper %}
-    <div id="content" class="col-lg-10">
-        {% block content %}
-            <div class="row">
-                <div id="content-header" class="col-sm-12">
-                    {% block content_header %}
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <h1 class="title">{% block content_title %}{% endblock %}</h1>
+    <div id="wrapper" class="container">
+        {% block wrapper %}
+        <div id="content" class="col-lg-10">
+            {% block content %}
+                <div class="row">
+                    <div id="content-header" class="col-sm-12">
+                        {% block content_header %}
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h1 class="title">{% block content_title %}{% endblock %}</h1>
+                                </div>
                             </div>
-                        </div>
-                    {% endblock content_header %}
-                </div>
+                        {% endblock content_header %}
+                    </div>
 
-                <div id="main" class="col-sm-9">
-                    {% block main %}{% endblock %}
-                </div>
+                    <div id="main" class="col-sm-9">
+                        {% block main %}{% endblock %}
+                    </div>
 
-                <div id="sidebar" class="col-sm-3">
-                    {% block sidebar %}{% endblock %}
+                    <div id="sidebar" class="col-sm-3">
+                        {% block sidebar %}{% endblock %}
+                    </div>
                 </div>
-            </div>
-        {% endblock content %}
+            {% endblock content %}
+        </div>
+        {% endblock wrapper %}
     </div>
-    {% endblock wrapper %}
-</div>
-
-{% block body_javascript %}
-    <script src="{{ asset('bundles/easyadmin/javascript/jquery-flexmenu.min.js') }}"></script>
-    <script src="{{ asset('bundles/easyadmin/javascript/admin.js') }}"></script>
-{% endblock body_javascript %}
-
-{% for js_asset in easyadmin_config('design.assets.js') %}
-    <script src="{{ asset(js_asset) }}"></script>
-{% endfor %}
-
+    {% block body_javascript %}
+        <script src="{{ asset('bundles/easyadmin/javascript/jquery-flexmenu.min.js') }}"></script>
+        <script src="{{ asset('bundles/easyadmin/javascript/admin.js') }}"></script>
+    {% endblock body_javascript %}
+    {% for js_asset in easyadmin_config('design.assets.js') %}
+        <script src="{{ asset(js_asset) }}"></script>
+    {% endfor %}
 </div>
 {% endblock body %}
 

@@ -20,6 +20,12 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('easy_admin_popup');
 
+        $rootNode
+        ->children()
+            ->scalarNode('layout')->isRequired()
+            ->end()
+        ->end();
+
         return $treeBuilder;
     }
 }

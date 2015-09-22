@@ -16,3 +16,9 @@ services:
             - "@easyadmin.translation.entity_translation"
         tags:
             -  { name: jms_translation.extractor, alias: "adminbundle_translation_entity_extractor" }
+    easyadminpopup.twig.extension:
+        class: "A5sys\\EasyAdminPopupBundle\\Twig\\EasyAdminPopupTwigExtension"
+        arguments:
+            - "%easy_admin_popup.layout%"
+        tags:
+            - { name: twig.extension }
