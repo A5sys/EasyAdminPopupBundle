@@ -491,4 +491,39 @@ class AdminController extends BaseAdminController
 
         $formBuilder->add($name, $fieldType, $formFieldOptions);
     }
+
+    /**
+     *
+     * @param type  $entity
+     * @param array $entityProperties
+     * @return Form
+     */
+    protected function createCustomForm($form, $entity, array $entityProperties, $view, array $options = [])
+    {
+        $formCssClass = array_reduce($this->config['design']['form_theme'], function ($previousClass, $formTheme) {
+            return sprintf('theme-%s %s', strtolower(str_replace('.html.twig', '', basename($formTheme))), $previousClass);
+        });
+
+        $urlParameters = array(
+            'action' => $view,
+            'entity' => $this->entity['name'],
+        );
+
+        if ($view === 'edit') {
+            $urlParameters['id'] = $entity->getId();
+        }
+
+        $url = $this->generateUrl('admin_json', $urlParameters);
+
+        $formOptions = array_merge($options, array(
+            'data_class' => $this->entity['class'],
+            'attr' => array('class' => $formCssClass, 'id' => $view.'-form'),
+            'method' => 'POST',
+            'action' => $url,
+        ));
+
+        $formBuilder = $this->createForm($form, $entity, $formOptions);
+
+        return $formBuilder;
+    }
 }
