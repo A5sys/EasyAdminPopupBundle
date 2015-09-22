@@ -1,6 +1,6 @@
 # EasyAdminPopupBundle
 
-This bundle is a layer that gives the "popup" look and feel for the [EsayAdminBundle](https://github.com/javiereguiluz/EasyAdminBundle)
+This bundle is a layer that gives the "popup" look and feel for the [EasyAdminBundle](https://github.com/javiereguiluz/EasyAdminBundle)
 
 # Dependency
 
