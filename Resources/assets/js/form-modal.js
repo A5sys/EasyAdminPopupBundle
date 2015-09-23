@@ -1,3 +1,7 @@
+var EasyAdminPopup = {};
+EasyAdminPopup.datepicker = {};
+EasyAdminPopup.datepicker.format = 'dd/mm/yyyy';
+EasyAdminPopup.datepicker.delimiter = '/';
 
 formModal = {};
 
@@ -11,12 +15,13 @@ formModal.initForm = function ()
 {
     $('[data-provider="datepicker"]').datetimepicker({
         autoclose: true,
-        format: 'dd/mm/yyyy',
+        format: EasyAdminPopup.datepicker.format,
         language: 'fr',
         minView: 'month',
         pickerPosition: 'bottom-left',
         todayBtn: true,
-        startView: 'month'
+        startView: 'month',
+        forceParse: true
     });
 
     $('[data-provider="datetimepicker"]').datetimepicker({
@@ -24,7 +29,8 @@ formModal.initForm = function ()
         format: 'dd/mm/yyyy hh:ii',
         language: 'fr',
         pickerPosition: 'bottom-left',
-        todayBtn: true
+        todayBtn: true,
+        forceParse: true
     });
 
     $('[data-provider="timepicker"]').datetimepicker({
@@ -34,7 +40,8 @@ formModal.initForm = function ()
         maxView: 'day',
         minView: 'hour',
         pickerPosition: 'bottom-left',
-        startView: 'day'
+        startView: 'day',
+        forceParse: true
     });
 
     // Restore value from hidden input
@@ -73,4 +80,31 @@ formModal.postForm = function ()
     });
 
     return false;
+};
+
+EasyAdminPopup.stringToDate = function (_date,_format,_delimiter)
+{
+    var formatLowerCase=_format.toLowerCase();
+    var formatItems=formatLowerCase.split(_delimiter);
+    var dateItems=_date.split(_delimiter);
+    var monthIndex=formatItems.indexOf("mm");
+    var dayIndex=formatItems.indexOf("dd");
+    var yearIndex=formatItems.indexOf("yyyy");
+    var month=parseInt(dateItems[monthIndex]);
+    month-=1;
+    var formatedDate = new Date(dateItems[yearIndex],month,dateItems[dayIndex]);
+    return formatedDate;
+};
+
+EasyAdminPopup.updateDatetimePickerHiddenInput = function (displayId, hiddenId)
+{
+    var input = $('#'+displayId);
+    var displayVal = input.val();
+    var displayDate = EasyAdminPopup.stringToDate(displayVal, EasyAdminPopup.datepicker.format, EasyAdminPopup.datepicker.delimiter);
+
+    if (!isNaN(displayDate.getTime())) {
+        var hiddenVal = displayDate.getFullYear() + '-' + (displayDate.getMonth() + 1) + '-' + displayDate.getDate();
+
+        $('#'+hiddenId).val(hiddenVal);
+    }
 };
