@@ -1,4 +1,5 @@
 action:
+    close: Fermer
     new:
         label: Créer
         validate: Valider
