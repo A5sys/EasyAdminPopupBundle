@@ -8,7 +8,7 @@ services:
             - { name: kernel.event_listener, event: "easy_admin.post_persist", method: onPostPersist }
             - { name: kernel.event_listener, event: "easy_admin.post_update", method: onPostUpdate }
             - { name: kernel.event_listener, event: "easy_admin.post_remove", method: onPostRemove }
-    admin.translation.entity_extractor:
+    easy_admin_popup.translation.entity_extractor:
         class: "A5sys\\EasyAdminPopupBundle\\Translation\\EntityExtractor"
         arguments:
             - "%easyadmin.config%"
