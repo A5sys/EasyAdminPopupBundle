@@ -2,6 +2,59 @@
 
 {% trans_default_domain "EasyAdminBundle" %}
 
+{% block content_header %}
+<div class="row">
+    <div class="col-xs-12 col-sm-5">
+        <h1 class="title">{{ block('content_title') }}</h1>
+    </div>
+    <div class="col-xs-12 col-sm-7">
+    {% block view_actions %}
+        {% if easyadmin_action_is_enabled_for_list_view('new', _entity_config.name) %}
+            {% block new_action %}
+                {% set _action = easyadmin_get_action_for_list_view('new', _entity_config.name) %}
+                <div id="content-actions">
+                    <a  class="btn {{ _action.css_class|default('') }} pull-right"
+                        onClick="formModal.init('{{ path('admin', _request_parameters|merge({ action: _action.name })) }}')">
+                        {% if _action.icon %}<i class="fa fa-{{ _action.icon }}"></i>{% endif %}
+                        {{ 'action.new.label'|trans }}
+                    </a>
+                </div>
+            {% endblock new_action %}
+        {% endif %}
+    {% endblock view_actions %}
+    </div>
+</div>
+<div class="row search">
+    <div class="col-xs-12 col-sm-12">
+     {% if easyadmin_action_is_enabled_for_list_view('search', _entity_config.name) %}
+        {% block search_action %}
+            {% set _action = easyadmin_get_action_for_list_view('search', _entity_config.name) %}
+
+            {{ form_start(searchForm) }}
+            {% for child in searchForm.children %}
+
+                    <div class="col-sm-4">
+                        {{ form_row(child) }}
+                    </div>
+            {% endfor %}
+            {{ form_rest(searchForm) }}
+            <div class="buttons pull-right">
+                <input type="submit" class="btn"/>
+                {# reset filter redirecting to the list #}
+                <a href="{{ path('admin', _request_parameters|merge({ action: 'list' })) }}"
+                   class="btn"
+                   data-toggle="tooltip"
+                   data-original-title="{{ ("action.search_reset.tooltip")|trans }}">
+                    <i class="fa fa-undo"></i>
+                </a>
+            </div>
+            {{ form_end(searchForm) }}
+        {% endblock search_action %}
+    {% endif %}
+    </div>
+</div>
+{% endblock content_header %}
+
 {% block content %}
     {% for flashMessage in app.session.flashbag.get('notice') %}
         <div class="flash-notice">
@@ -19,17 +72,6 @@
     {% endif %}
 {% endblock %}
 
-{% block new_action %}
-    {% set _action = easyadmin_get_action_for_list_view('new', _entity_config.name) %}
-    <div id="content-actions">
-        <a  class="btn {{ _action.css_class|default('') }} pull-right"
-            onClick="formModal.init('{{ path('admin', _request_parameters|merge({ action: _action.name })) }}')">
-            {% if _action.icon %}<i class="fa fa-{{ _action.icon }}"></i>{% endif %}
-            {{ 'action.new.label'|trans }}
-        </a>
-    </div>
-{% endblock new_action %}
-
 {% block item_actions %}
     {% spaceless %}
         {% for _action in _list_item_actions %}
@@ -46,19 +88,3 @@
         </a>
     {% endspaceless %}
 {% endblock item_actions %}
-
-{% block search_action %}
-
-{% set _action = easyadmin_get_action_for_list_view('search', _entity_config.name) %}
-
-{{ form_start(searchForm) }}
-    <input type="submit" />
-    {# reset filter redirecting to the list #}
-    <a href="{{ path('admin', _request_parameters|merge({ action: 'list' })) }}"
-       data-toggle="tooltip"
-       data-original-title="{{ ("action.search_reset.tooltip")|trans }}">
-        <i class="fa fa-undo"></i>
-    </a>
-{{ form_end(searchForm) }}
-
-{% endblock search_action %}
