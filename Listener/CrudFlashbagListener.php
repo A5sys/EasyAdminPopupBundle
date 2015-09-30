@@ -3,7 +3,7 @@
 namespace A5sys\EasyAdminPopupBundle\Listener;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
-use Symfony\Bundle\FrameworkBundle\Translation\Translator;
+use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
@@ -23,7 +23,7 @@ class CrudFlashbagListener
      * @param Session    $session
      * @param Translator $translator
      */
-    public function __construct(Session $session, Translator $translator)
+    public function __construct(Session $session, TranslatorInterface $translator)
     {
         $this->session = $session;
         $this->translator = $translator;
