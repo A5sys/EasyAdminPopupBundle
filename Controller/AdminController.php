@@ -108,6 +108,12 @@ class AdminController extends BaseAdminController
      */
     protected function initialize(Request $request)
     {
+        if (!$request->query->has('sortField')) {
+            $noSort = true;
+        } else {
+            $noSort = false;
+        }
+
         parent::initialize($request);
 
         //the admin controller parent uses the ajax property to toggle a property
@@ -115,6 +121,11 @@ class AdminController extends BaseAdminController
         //so we simulate the fact that all post are standart post
         if ($this->request) {
             $this->request->headers->remove('X-Requested-With');
+        }
+
+        //we do not want a default sort
+        if ($noSort) {
+            $request->query->set('sortField', null);
         }
     }
 
