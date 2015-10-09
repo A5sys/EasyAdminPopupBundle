@@ -20,7 +20,7 @@
             {% set id = id ~ '_mopa_picker_display' %}
             {% set full_name = null %}
             {% set type = 'text' %}
-            {% set attr = attr|merge({'onblur': 'EasyAdminPopup.updateDatetimePickerHiddenInput(\'' ~ id  ~ '\', \'' ~ hiddenId ~ '\');'}) %}
+            {% set attr = attr|merge({'onchange': 'EasyAdminPopup.updateDatetimePickerHiddenInput(\'' ~ id  ~ '\', \'' ~ hiddenId ~ '\');'}) %}
             {{ block('form_widget_simple') }}
             <span class="input-group-addon">{{ mopa_bootstrap_icon(widget_addon_icon) }}</span>
         </div>
