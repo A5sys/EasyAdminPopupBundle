@@ -92,7 +92,7 @@ class AdminController extends BaseAdminController
                 'id' => $id,
             );
 
-            $url = $this->generateUrl('admin_json', $urlParameters);
+            $url = $this->generateUrl($this->getJsonRouteName(), $urlParameters);
         }
 
         return $url;
@@ -142,7 +142,7 @@ class AdminController extends BaseAdminController
     protected function createDeleteForm($entityName, $entityId)
     {
         return $this->createFormBuilder()
-            ->setAction($this->generateUrl('admin_json', array('action' => 'delete', 'entity' => $entityName, 'id' => $entityId)))
+            ->setAction($this->generateUrl($this->getJsonRouteName(), array('action' => 'delete', 'entity' => $entityName, 'id' => $entityId)))
             ->setMethod('DELETE')
             ->getForm()
         ;
@@ -185,7 +185,7 @@ class AdminController extends BaseAdminController
 
                 $this->dispatch(EasyAdminEvents::POST_REMOVE, array('entity' => $entity));
 
-                $return = $this->redirect($this->generateUrl('admin', array('action' => 'list', 'entity' => $this->entity['name'])));
+                $return = $this->redirect($this->generateUrl($this->getAdminRouteName(), array('action' => 'list', 'entity' => $this->entity['name'])));
             }
 
             $this->dispatch(EasyAdminEvents::POST_DELETE);
@@ -387,7 +387,7 @@ class AdminController extends BaseAdminController
             'entity' => $this->entity['name'],
         );
 
-        $url = $this->generateUrl('admin', $urlParameters);
+        $url = $this->generateUrl($this->getAdminRouteName(), $urlParameters);
 
         return $url;
     }
@@ -524,7 +524,7 @@ class AdminController extends BaseAdminController
             $urlParameters['id'] = $entity->getId();
         }
 
-        $url = $this->generateUrl('admin_json', $urlParameters);
+        $url = $this->generateUrl($this->getJsonRouteName(), $urlParameters);
 
         $formOptions = array_merge($options, array(
             'data_class' => $this->entity['class'],
@@ -536,5 +536,23 @@ class AdminController extends BaseAdminController
         $formBuilder = $this->createForm($form, $entity, $formOptions);
 
         return $formBuilder;
+    }
+
+    /**
+     * Get the name of the json route to use
+     * @return string
+     */
+    protected function getJsonRouteName()
+    {
+        return 'admin_json';
+    }
+
+    /**
+     * Get the name of the route to use
+     * @return string
+     */
+    protected function getAdminRouteName()
+    {
+        return 'admin';
     }
 }
