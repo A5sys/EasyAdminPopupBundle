@@ -29,7 +29,7 @@
      {% if easyadmin_action_is_enabled_for_list_view('search', _entity_config.name) %}
         {% block search_action %}
             {% set _action = easyadmin_get_action_for_list_view('search', _entity_config.name) %}
-
+            {% set searchUrl =searchForm.vars.action %}
             {{ form_start(searchForm) }}
             {% for child in searchForm.children %}
 
@@ -41,7 +41,7 @@
             <div class="buttons pull-right">
                 <input type="submit" class="btn"/>
                 {# reset filter redirecting to the list #}
-                <a href="{{ path('admin', _request_parameters|merge({ action: 'list' })) }}"
+                <a href="{{ searchUrl }}"
                    class="btn"
                    data-toggle="tooltip"
                    data-original-title="{{ ("action.search_reset.tooltip")|trans }}">
