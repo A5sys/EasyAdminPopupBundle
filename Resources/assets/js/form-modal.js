@@ -8,7 +8,10 @@ formModal = {};
 formModal.init = function (url)
 {
     $('#modal .modal-content').load(url);
-    $('#modal').modal('show');
+    $('#modal').modal({
+        show: true,
+        backdrop :'static'
+    });
 };
 
 formModal.initForm = function ()
