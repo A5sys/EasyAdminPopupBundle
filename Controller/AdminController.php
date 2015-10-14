@@ -235,7 +235,7 @@ class AdminController extends BaseAdminController
      *
      * @return Pagerfanta The paginated query results
      */
-    protected function findBy($entityClass, $searchQuery, array $searchableFields, $page = 1, $maxPerPage = 15)
+    protected function findBy($entityClass, $searchQuery, array $searchableFields, $page = 1, $maxPerPage = 15, $sortField = null, $sortDirection = null)
     {
         $queryBuilder = $this->em->createQueryBuilder()->select('entity')->from($entityClass, 'entity');
 
@@ -250,6 +250,14 @@ class AdminController extends BaseAdminController
                     $this->addFilterToFindBy($queryBuilder, $metadata, $name, $search);
                 }
             }
+        }
+
+        if (!empty($sortField)) {
+            if (empty($sortDirection) || !in_array(strtoupper($sortDirection), array('ASC', 'DESC'))) {
+                $sortDirection = 'DESC';
+            }
+
+            $queryBuilder->orderBy('entity.'.$sortField, $sortDirection);
         }
 
         $paginator = new Pagerfanta(new DoctrineORMAdapter($queryBuilder, false));
@@ -305,7 +313,7 @@ class AdminController extends BaseAdminController
         $searchForm->handleRequest($this->request);
         $searchData = $searchForm->getData();
 
-        $paginator = $this->findBy($this->entity['class'], $searchData, $searchableFields, $this->request->query->get('page', 1), $this->config['list']['max_results']);
+        $paginator = $this->findBy($this->entity['class'], $searchData, $searchableFields, $this->request->query->get('page', 1), $this->config['list']['max_results'], $this->request->query->get('sortField'), $this->request->query->get('sortDirection'));
 
         $fields = $this->entity['list']['fields'];
 
@@ -349,6 +357,7 @@ class AdminController extends BaseAdminController
 
         $url = $this->getSearchFormUrl();
 
+        $formBuilder->setMethod('GET');
         $formBuilder->setAction($url);
 
         return $formBuilder->getForm();
