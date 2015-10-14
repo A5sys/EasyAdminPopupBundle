@@ -14,7 +14,7 @@
                     <a  class="btn {{ _action.css_class|default('') }} pull-right"
                         onClick="formModal.init('{{ path('admin', _request_parameters|merge({ action: _action.name })) }}')">
                         {% if _action.icon %}<i class="fa fa-{{ _action.icon }}"></i>{% endif %}
-                        {{ 'action.new.label'|trans(_trans_parameters, 'EasyAdminBundle') }}
+                        {{ 'action.new.label'|trans(_trans_parameters) }}
                     </a>
                 </div>
             {% endblock new_action %}
@@ -45,7 +45,7 @@
                     <a href="{{ searchUrl }}"
                        class="btn btn-reset-search"
                        data-toggle="tooltip"
-                       data-original-title="{{ ("action.search_reset.tooltip")|trans(_trans_parameters, 'EasyAdminBundle') }}">
+                       data-original-title="{{ ("action.search_reset.tooltip")|trans(_trans_parameters) }}">
                         <i class="fa fa-undo"></i>
                     </a>
                 </div>

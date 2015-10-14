@@ -1,5 +1,3 @@
-{% trans_default_domain "EasyAdminBundle" %}
-
 {% if 'method' == _action.type %}
     {% set _action_href = path('admin', _request_parameters|merge({ action: _action.name, id: _item_id })) %}
 {% elseif 'route' == _action.type %}

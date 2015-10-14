@@ -3,7 +3,6 @@
 {% set _trans_parameters = { '%entity_name%': _entity_config.name|trans, '%entity_label%': _entity_config.label|trans, '%entity_id%': _entity_id } %}
 
 {% extends '@EasyAdminPopup/base_modal.html.twig' %}
-{% trans_default_domain "EasyAdminBundle" %}
 
 {% block content %}
     {% block main %}
