@@ -12,10 +12,15 @@ services:
         class: "A5sys\\EasyAdminPopupBundle\\Translation\\EntityExtractor"
         arguments:
             - "%easyadmin.config%"
-            - "EasyAdminBundle"
-            - "@easyadmin.translation.entity_translation"
+            - "messages"
+            - "@easy_admin_popup.translation.entity_translation"
         tags:
             -  { name: jms_translation.extractor, alias: "easy_admin_popup_translation_entity_extractor" }
+    easy_admin_popup.translation.entity_translation:
+        class: "A5sys\\EasyAdminPopupBundle\\Translation\\EntityTranslation"
+        arguments:
+            - "%easyadmin.config%"
+            - "@easyadmin.configurator"
     easyadminpopup.twig.extension:
         class: "A5sys\\EasyAdminPopupBundle\\Twig\\EasyAdminPopupTwigExtension"
         arguments:

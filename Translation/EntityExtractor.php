@@ -5,7 +5,7 @@ namespace A5sys\EasyAdminPopupBundle\Translation;
 use JMS\TranslationBundle\Model\Message;
 use JMS\TranslationBundle\Model\MessageCatalogue;
 use JMS\TranslationBundle\Translation\ExtractorInterface;
-use JavierEguiluz\Bundle\EasyAdminBundle\Translation\EntityTranslation as EasyEntityTranslation;
+use A5sys\EasyAdminPopupBundle\Translation\EntityTranslation as EasyEntityTranslation;
 
 /**
  * The extractor for the automatic translations

@@ -1,7 +1,5 @@
 {% extends '@EasyAdmin/default/list.html.twig' %}
 
-{% trans_default_domain "EasyAdminBundle" %}
-
 {% block content_header %}
 <div class="row">
     <div class="col-xs-12 col-sm-5">
@@ -16,7 +14,7 @@
                     <a  class="btn {{ _action.css_class|default('') }} pull-right"
                         onClick="formModal.init('{{ path('admin', _request_parameters|merge({ action: _action.name })) }}')">
                         {% if _action.icon %}<i class="fa fa-{{ _action.icon }}"></i>{% endif %}
-                        {{ 'action.new.label'|trans }}
+                        {{ 'action.new.label'|trans(_trans_parameters, 'EasyAdminBundle') }}
                     </a>
                 </div>
             {% endblock new_action %}
@@ -44,7 +42,7 @@
                 <a href="{{ searchUrl }}"
                    class="btn btn-reset-search"
                    data-toggle="tooltip"
-                   data-original-title="{{ ("action.search_reset.tooltip")|trans }}">
+                   data-original-title="{{ ("action.search_reset.tooltip")|trans(_trans_parameters, 'EasyAdminBundle') }}">
                     <i class="fa fa-undo"></i>
                 </a>
             </div>
@@ -68,7 +66,7 @@
     {% if 'search' == app.request.get('action') %}
         {{ 'search.page_title'|transchoice(paginator.nbResults)|raw }}
     {% else %}
-        {{ (_entity_config.name~'.list.title')|trans }}
+        {{ (_entity_config.name~'.list.title')|trans(_trans_parameters, 'EasyAdminBundle') }}
     {% endif %}
 {% endblock %}
 
@@ -83,7 +81,7 @@
         <a onClick="formModal.init('{{ _action_href }}')"
             data-toggle="tooltip"
             data-placement="right"
-            data-original-title="{{ ("action.delete.tooltip")|trans }}">
+            data-original-title="{{ ("action.delete.tooltip")|trans(_trans_parameters, 'EasyAdminBundle') }}">
             <i class="fa fa-remove"></i>
         </a>
     {% endspaceless %}
