@@ -64,9 +64,9 @@
 
 {% block content_title %}
     {% if 'search' == app.request.get('action') %}
-        {{ 'search.page_title'|transchoice(paginator.nbResults)|raw }}
+        {{ 'search.page_title'|transchoice(count = paginator.nbResults, domain = 'EasyAdminBundle')|raw }}
     {% else %}
-        {{ (_entity_config.name~'.list.title')|trans(_trans_parameters, 'EasyAdminBundle') }}
+        {{ (_entity_config.name~'.list.title')|trans(_trans_parameters) }}
     {% endif %}
 {% endblock %}
 
