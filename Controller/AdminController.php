@@ -270,9 +270,16 @@ class AdminController extends BaseAdminController
     protected function addFilterToFindBy(QueryBuilder $queryBuilder, array $metadata, $name, $search)
     {
         if ($metadata['dataType'] === 'association') {
+            //the word are reserved, so we add a prefix
+            if (in_array($name, ['member', 'group'])) {
+                $associationName = 'entity_'.$name;
+            } else {
+                $associationName = $name;
+            }
+
             $id = $search->getId();
-            $queryBuilder->leftJoin('entity.'.$name, $name);
-            $queryBuilder->andWhere($name.'.id = :'.$name);
+            $queryBuilder->leftJoin('entity.'.$name, $associationName);
+            $queryBuilder->andWhere($associationName.'.id = :'.$name);
             $queryBuilder->setParameter($name, $id);
         } elseif (in_array($metadata['type'], array('text', 'string'))) {
             $queryBuilder->andWhere('entity.'.$name.' LIKE :'.$name);
