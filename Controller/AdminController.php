@@ -243,10 +243,12 @@ class AdminController extends BaseAdminController
         $queryParameters = array();
 
         foreach ($searchableFields as $name => $metadata) {
-            $search = $searchQuery[$name];
+            if (isset($searchQuery[$name])) {
+                $search = $searchQuery[$name];
 
-            if ($search !== null) {
-                $this->addFilterToFindBy($queryBuilder, $metadata, $name, $search);
+                if ($search !== null) {
+                    $this->addFilterToFindBy($queryBuilder, $metadata, $name, $search);
+                }
             }
         }
 
