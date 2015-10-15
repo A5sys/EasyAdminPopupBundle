@@ -314,7 +314,7 @@ class AdminController extends BaseAdminController
         $searchableFields = $this->entity['search']['fields'];
 
         if (method_exists($this, $customMethodName = 'create'.$this->entity['name'].'SearchForm')) {
-            $searchForm = $this->{$customMethodName}($entity, $fields);
+            $searchForm = $this->{$customMethodName}();
         } else {
             $searchForm =  $this->createSearchForm();
         }
