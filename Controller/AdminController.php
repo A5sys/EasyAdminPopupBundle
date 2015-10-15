@@ -214,7 +214,11 @@ class AdminController extends BaseAdminController
 
         $this->dispatch(EasyAdminEvents::POST_LIST, array('paginator' => $paginator));
 
-        $searchForm =  $this->createSearchForm();
+        if (method_exists($this, $customMethodName = 'create'.$this->entity['name'].'SearchForm')) {
+            $searchForm = $this->{$customMethodName}();
+        } else {
+            $searchForm =  $this->createSearchForm();
+        }
 
         return $this->render($this->entity['templates']['list'], array(
             'paginator' => $paginator,
@@ -309,7 +313,12 @@ class AdminController extends BaseAdminController
 
         $searchableFields = $this->entity['search']['fields'];
 
-        $searchForm =  $this->createSearchForm();
+        if (method_exists($this, $customMethodName = 'create'.$this->entity['name'].'SearchForm')) {
+            $searchForm = $this->{$customMethodName}($entity, $fields);
+        } else {
+            $searchForm =  $this->createSearchForm();
+        }
+
         $searchForm->handleRequest($this->request);
         $searchData = $searchForm->getData();
 
