@@ -79,10 +79,11 @@ class CrudFlashbagListener
      */
     protected function getMessage($message, GenericEvent $event)
     {
-        $transDomain = 'EasyAdminBundle';
+        $entityTransDomain = 'messages';
         $entityClass = $this->getEntityClass($event);
-        $entityClassLabel = $this->translator->trans(/** @Ignore */$entityClass.'.label', [], $transDomain);
+        $entityClassLabel = $this->translator->trans(/** @Ignore */$entityClass.'.label', [], $entityTransDomain);
 
+        $transDomain = 'EasyAdminBundle';
         $messageParameters = array('%entity%' => $entityClassLabel);
         $finalMessage = $this->translator->trans(/** @Ignore */$message, $messageParameters, $transDomain);
 

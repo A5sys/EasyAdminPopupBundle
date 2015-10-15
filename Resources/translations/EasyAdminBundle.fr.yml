@@ -1,0 +1,5 @@
+flash:
+    entity:
+        remove: L'élément %entity% a été supprimé
+        persist: L'élément %entity% a été créé
+        update: L'élément %entity% a été modifié
