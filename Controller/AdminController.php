@@ -227,6 +227,42 @@ class AdminController extends BaseAdminController
         ));
     }
 
+
+    /**
+     * Performs a database query to get all the records related to the given
+     * entity. It supports pagination and field sorting.
+     *
+     * @param string      $entityClass
+     * @param int         $page
+     * @param int         $maxPerPage
+     * @param string|null $sortField
+     * @param string|null $sortDirection
+     *
+     * @return Pagerfanta The paginated query results
+     */
+    protected function findAll($entityClass, $page = 1, $maxPerPage = 15, $sortField = null, $sortDirection = null)
+    {
+        if (method_exists($this, $customMethodName = 'create'.$this->entity['name'].'QueryBuilder')) {
+            $query = $this->{$customMethodName}($entityClass);
+        } else {
+            $query = $this->em->createQueryBuilder()->select('entity')->from($entityClass, 'entity');
+        }
+
+        if (null !== $sortField) {
+            if (empty($sortDirection) || !in_array(strtoupper($sortDirection), array('ASC', 'DESC'))) {
+                $sortDirection = 'DESC';
+            }
+
+            $query->orderBy('entity.'.$sortField, $sortDirection);
+        }
+
+        $paginator = new Pagerfanta(new DoctrineORMAdapter($query, false));
+        $paginator->setMaxPerPage($maxPerPage);
+        $paginator->setCurrentPage($page);
+
+        return $paginator;
+    }
+
     /**
      * Performs a database query based on the search query provided by the user.
      * It supports pagination and field sorting.
@@ -241,7 +277,11 @@ class AdminController extends BaseAdminController
      */
     protected function findBy($entityClass, $searchQuery, array $searchableFields, $page = 1, $maxPerPage = 15, $sortField = null, $sortDirection = null)
     {
-        $queryBuilder = $this->em->createQueryBuilder()->select('entity')->from($entityClass, 'entity');
+        if (method_exists($this, $customMethodName = 'create'.$this->entity['name'].'QueryBuilder')) {
+            $queryBuilder = $this->{$customMethodName}($entityClass);
+        } else {
+            $queryBuilder = $this->em->createQueryBuilder()->select('entity')->from($entityClass, 'entity');
+        }
 
         $queryConditions = $queryBuilder->expr()->orX();
         $queryParameters = array();
