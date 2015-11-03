@@ -8,7 +8,18 @@
     {% block main %}
         {{ 'action.delete.confirm'|trans }}
         {% block entity_form %}
-            {{ include('@EasyAdminPopup/default/form.html.twig', { view: 'delete' }) }}
+            {{ form(form) }}
+            <div class="form-group" style="height: 30px;">
+                <div id="form-actions-row">
+                    <div class='pull-right'>
+                        <button type="submit" class="btn btn-delete" onclick="return formModal.postForm()">
+                            <i class="fa fa-save"></i> {{ 'action.delete'|trans(_trans_parameters, 'messages') }}
+                        </button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">{{ 'action.close'|trans }}</button>
+                    </div>
+                </div>
+            </div>
         {% endblock entity_form %}
     {% endblock %}
+
 {% endblock %}

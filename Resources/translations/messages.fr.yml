@@ -1,8 +1,4 @@
 action:
-    close: Fermer
-    new:
-        label: Créer
-        validate: Valider
     show:
         tooltip: Afficher
     edit:
@@ -12,5 +8,3 @@ action:
         tooltip: Supprimer
         validate: Valider
         confirm: Etes vous sûr de vouloir supprimer cet élément?
-    search_reset:
-        tooltip: Réinitialiser les filtres

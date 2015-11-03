@@ -40,3 +40,47 @@
 {% endspaceless %}
 {% endblock date_widget %}
 
+{% block item_actions %}
+    <div class='pull-right'>
+        {# the 'save' action is hardcoded for the 'edit' and 'new' views #}
+        <button type="submit" class="btn btn-save" onclick="return formModal.postForm()">
+            <i class="fa fa-save"></i> {{ 'action.save'|trans(_trans_parameters, 'messages') }}
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ 'action.close'|trans }}</button>
+
+        {% set _entity_actions = (easyadmin.view == 'new')
+        ? easyadmin_get_actions_for_new_item(easyadmin.entity.name)
+        : easyadmin_get_actions_for_edit_item(easyadmin.entity.name) %}
+
+        {% for _action in _entity_actions %}
+            {% if 'method' == _action.type %}
+                {% set _action_href = path('admin', { action: _action.name, view: view, entity: easyadmin.entity.name, id: attribute(entity, easyadmin.entity.primary_key_field_name) }) %}
+            {% elseif 'route' == _action.type %}
+                {% set _action_href = path(_action.name, { entity: easyadmin.entity.name, id: attribute(entity, easyadmin.entity.primary_key_field_name) }) %}
+            {% endif %}
+
+            <a class="btn {{ _action.css_class|default('') }}" href="{{ _action_href }}">
+                {% if _action.icon %}<i class="fa fa-{{ _action.icon }}"></i>{% endif %}
+                {{ _action.label|trans(_trans_parameters) }}
+            </a>
+        {% endfor %}
+
+        {% if easyadmin.view == 'edit' %}
+            {% if easyadmin_action_is_enabled_for_edit_view('delete', easyadmin.entity.name) %}
+                {% set _action = easyadmin_get_action_for_edit_view('delete', easyadmin.entity.name) %}
+                <button type="button" id="button-delete"
+                        class="btn {{ _action.css_class|default('btn-danger') }}">
+                    {% if _action.icon %}<i class="fa fa-{{ _action.icon }}"></i>{% endif %}
+                    {{ _action.label|default('action.delete')|trans(_trans_parameters, 'messages') }}
+                </button>
+            {% endif %}
+        {% endif %}
+
+        {# for aesthetic reasons, the 'list' action is always displayed as a link instead of a button #}
+        {% if easyadmin.view == 'new' and easyadmin_action_is_enabled_for_new_view('list', easyadmin.entity.name) %}
+            {% set _list_action = easyadmin_get_action_for_new_view('list', easyadmin.entity.name) %}
+        {% elseif easyadmin.view == 'edit' and easyadmin_action_is_enabled_for_edit_view('list', easyadmin.entity.name) %}
+            {% set _list_action = easyadmin_get_action_for_edit_view('list', easyadmin.entity.name) %}
+        {% endif %}
+    </div>
+{% endblock item_actions %}

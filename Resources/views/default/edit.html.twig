@@ -9,7 +9,7 @@
 {% block content %}
     {% block main %}
         {% block entity_form %}
-            {{ include(_entity_config.templates.form, { view: 'edit' }) }}
+            {{ form(form) }}
         {% endblock entity_form %}
     {% endblock %}
 {% endblock %}

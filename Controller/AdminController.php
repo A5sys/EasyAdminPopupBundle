@@ -2,17 +2,18 @@
 
 namespace A5sys\EasyAdminPopupBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\EntityNotFoundException;
 use JavierEguiluz\Bundle\EasyAdminBundle\Controller\AdminController as BaseAdminController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\Form\FormBuilder;
-use tbn\JsonAnnotationBundle\Configuration\Json;
 use JavierEguiluz\Bundle\EasyAdminBundle\Event\EasyAdminEvents;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
-use Doctrine\ORM\QueryBuilder;
-use Doctrine\ORM\EntityNotFoundException;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use tbn\JsonAnnotationBundle\Configuration\Json;
 
 /**
  *
@@ -158,12 +159,17 @@ class AdminController extends BaseAdminController
     {
         $return = null;
 
+        //simulate configuration for the twig extension
+        $easyadmin = $this->request->attributes->get('easyadmin');
+        $easyadmin['entity']['delete']['fields'] = [];
+        $this->request->attributes->set('easyadmin', $easyadmin);
+
         $id = $this->request->query->get('id');
         if (!$entity = $this->em->getRepository($this->entity['class'])->find($id)) {
             throw new EntityNotFoundException(array('action' => 'delete', 'entity' => $this->entity, 'entity_id' => $id));
         }
 
-        $fields = $this->entity['edit']['fields'];
+        $fields = [];
 
         $form = $this->createDeleteForm($this->entity['name'], $id);
         $form->handleRequest($this->request);
@@ -186,6 +192,8 @@ class AdminController extends BaseAdminController
                 $this->dispatch(EasyAdminEvents::POST_REMOVE, array('entity' => $entity));
 
                 $return = $this->redirect($this->generateUrl($this->getAdminRouteName(), array('action' => 'list', 'entity' => $this->entity['name'])));
+            } else {
+                throw new \LogicException('The delete form is not valid');
             }
 
             $this->dispatch(EasyAdminEvents::POST_DELETE);
@@ -506,17 +514,49 @@ class AdminController extends BaseAdminController
      */
     protected function createEntityForm($entity, array $entityProperties, $view)
     {
-        $formCssClass = array_reduce($this->config['design']['form_theme'], function ($previousClass, $formTheme) {
-            return sprintf('theme-%s %s', strtolower(str_replace('.html.twig', '', basename($formTheme))), $previousClass);
-        });
+        if (method_exists($this, $customMethodName = 'create'.$this->entity['name'].'EntityForm')) {
+            $form = $this->{$customMethodName}($entity, $entityProperties, $view);
+            if (!$form instanceof FormInterface) {
+                throw new \Exception(sprintf(
+                    'The "%s" method must return a FormInterface, "%s" given.',
+                    $customMethodName,
+                    \is_object($form) ? \get_class($form) : \gettype($form)
+                ));
+            }
 
-        $formBuilder = $this->createFormBuilder($entity, array(
-            'data_class' => $this->entity['class'],
-            'attr' => array('class' => $formCssClass, 'id' => $view.'-form'),
-        ));
+            return $form;
+        }
 
-        foreach ($entityProperties as $name => $metadata) {
-            $this->createEntityFormField($formBuilder, $name, $metadata);
+        if (method_exists($this, $customBuilderMethodName = 'create'.$this->entity['name'].'EntityFormBuilder')) {
+            $formBuilder = $this->{$customBuilderMethodName}($entity, $entityProperties, $view);
+        } else {
+            $formBuilder = $this->createEntityFormBuilder($entity, $view);
+
+            $urlParameters = array(
+                'action' => $view,
+                'entity' => $this->entity['name'],
+            );
+
+            if ($view === 'edit') {
+                $urlParameters['id'] = $entity->getId();
+            }
+
+            $url = $this->generateUrl($this->getJsonRouteName(), $urlParameters);
+
+            $formBuilder->setAction($url);
+
+            //added
+            foreach ($entityProperties as $name => $metadata) {
+                $this->createEntityFormField($formBuilder, $name, $metadata);
+            }
+        }
+
+        if (!$formBuilder instanceof FormBuilderInterface) {
+            throw new \Exception(sprintf(
+                'The "%s" method must return a FormBuilderInterface, "%s" given.',
+                'createEntityForm',
+                \is_object($formBuilder) ? \get_class($formBuilder) : \gettype($formBuilder)
+            ));
         }
 
         return $formBuilder->getForm();
