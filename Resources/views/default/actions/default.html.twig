@@ -11,6 +11,7 @@
     {% if action.modal is defined and not(action.modal) %}
         href="{{ _action_href }}">
     {% else %}
+        href='#'
         onClick="formModal.init('{{ _action_href }}')">
     {% endif %}
     <i class="fa fa-{{ action.icon }}"></i>

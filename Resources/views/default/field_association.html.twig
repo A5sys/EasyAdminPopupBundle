@@ -2,7 +2,7 @@
     <span class="badge">{{ value|length }}</span>
 {% elseif link_parameters is defined %}
     {% set _action_href = path('admin', link_parameters) %}
-    <a onClick="formModal.init('{{ _action_href }}')">
+    <a onClick="formModal.init('{{ _action_href }}')" href='#'>
         {{ value|easyadmin_truncate }}
     </a>
 {% else %}
