@@ -2,7 +2,7 @@ action:
     show:
         tooltip: Afficher
     edit:
-        tooltip: Editer
+        tooltip: Modifier
         validate: Valider
     delete:
         tooltip: Supprimer

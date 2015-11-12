@@ -7,7 +7,7 @@ action:
     search:
         label: Rechercher
     new:
-        label: Créer
+        label: Nouveau
         validate: Valider
     close: Annuler
     search_reset:
