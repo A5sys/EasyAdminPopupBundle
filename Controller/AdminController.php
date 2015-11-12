@@ -291,9 +291,6 @@ class AdminController extends BaseAdminController
             $queryBuilder = $this->em->createQueryBuilder()->select('entity')->from($entityClass, 'entity');
         }
 
-        $queryConditions = $queryBuilder->expr()->orX();
-        $queryParameters = array();
-
         foreach ($searchableFields as $name => $metadata) {
             if (isset($searchQuery[$name])) {
                 $search = $searchQuery[$name];
@@ -462,9 +459,7 @@ class AdminController extends BaseAdminController
             'entity' => $this->entity['name'],
         );
 
-        $url = $this->generateUrl($this->getAdminRouteName(), $urlParameters);
-
-        return $url;
+        return $this->generateUrl($this->getAdminRouteName(), $urlParameters);
     }
 
     /**
@@ -640,9 +635,7 @@ class AdminController extends BaseAdminController
             'action' => $url,
         ));
 
-        $formBuilder = $this->createForm($form, $entity, $formOptions);
-
-        return $formBuilder;
+        return $this->createForm($form, $entity, $formOptions);
     }
 
     /**
