@@ -4,6 +4,8 @@ flash:
         persist: L'élément %entity% a été créé
         update: L'élément %entity% a été modifié
 action:
+    search:
+        label: Rechercher
     new:
         label: Créer
         validate: Valider

@@ -41,7 +41,7 @@
                 {% endfor %}
                 {{ form_rest(searchForm) }}
                 <div class="buttons pull-right">
-                    <input type="submit" class="btn btn-search"/>
+                    <input type="submit" class="btn btn-search" value="{{ 'action.search.label'|trans(_trans_parameters, 'EasyAdminBundle') }}"></button>
                     {# reset filter redirecting to the list #}
                     <a href="{{ searchUrl }}"
                        class="btn btn-reset-search"
