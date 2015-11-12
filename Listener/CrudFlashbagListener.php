@@ -85,9 +85,8 @@ class CrudFlashbagListener
 
         $transDomain = 'EasyAdminBundle';
         $messageParameters = array('%entity%' => $entityClassLabel);
-        $finalMessage = $this->translator->trans(/** @Ignore */$message, $messageParameters, $transDomain);
 
-        return $finalMessage;
+        return $this->translator->trans(/** @Ignore */$message, $messageParameters, $transDomain);
     }
 
     /**
@@ -102,8 +101,6 @@ class CrudFlashbagListener
         $entityClasses = explode('\\', $entityNamespace);
 
         //get last string of the classname
-        $entityClass = $entityClasses[count($entityClasses) - 1];
-
-        return $entityClass;
+        return $entityClasses[count($entityClasses) - 1];
     }
 }
