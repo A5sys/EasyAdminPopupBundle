@@ -4,6 +4,7 @@ services:
         arguments:
             - "@session"
             - "@translator"
+            - "%easy_admin_popup.customized_flash%"
         tags:
             - { name: kernel.event_listener, event: "easy_admin.post_persist", method: onPostPersist }
             - { name: kernel.event_listener, event: "easy_admin.post_update", method: onPostUpdate }
@@ -14,6 +15,7 @@ services:
             - "%easyadmin.config%"
             - "messages"
             - "@easy_admin_popup.translation.entity_translation"
+            - "%easy_admin_popup.customized_flash%"
         tags:
             -  { name: jms_translation.extractor, alias: "easy_admin_popup_translation_entity_extractor" }
     easy_admin_popup.translation.entity_translation:

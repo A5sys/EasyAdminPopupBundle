@@ -24,6 +24,9 @@ class Configuration implements ConfigurationInterface
         ->children()
             ->scalarNode('layout')->isRequired()
             ->end()
+            ->booleanNode('customized_flash')
+                ->defaultFalse()
+            ->end()
         ->end();
 
         return $treeBuilder;

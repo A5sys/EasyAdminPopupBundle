@@ -23,6 +23,7 @@ class EasyAdminPopupExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $container->setParameter('easy_admin_popup.layout', $config['layout']);
+        $container->setParameter('easy_admin_popup.customized_flash', $config['customized_flash']);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');

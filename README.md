@@ -25,6 +25,8 @@ You have to set the cofiguration:
 
         easy_admin_popup:
             layout: "::admin_layout.html.twig" #mandatory
+            customized_flash: false #optionnal, if you want to translate each entity crud flash. The translate key would be flash.User.persist (or update/remove) for a User entity
+
 
 The layout must have a body block.
 

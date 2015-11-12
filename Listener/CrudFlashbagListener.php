@@ -16,17 +16,20 @@ class CrudFlashbagListener
 {
     protected $session = null;
     protected $translator = null;
+    protected $customizedFlash = null;
 
     /**
      * Constructor
      *
      * @param Session    $session
      * @param Translator $translator
+     * @param boolean    $customizedFlash
      */
-    public function __construct(Session $session, TranslatorInterface $translator)
+    public function __construct(Session $session, TranslatorInterface $translator, $customizedFlash)
     {
         $this->session = $session;
         $this->translator = $translator;
+        $this->customizedFlash = $customizedFlash;
     }
 
     /**
@@ -36,7 +39,7 @@ class CrudFlashbagListener
      */
     public function onPostPersist(GenericEvent $event)
     {
-        $this->addFlashMessage('flash.entity.persist', $event);
+        $this->addFlashMessage('persist', $event);
     }
 
     /**
@@ -46,7 +49,7 @@ class CrudFlashbagListener
      */
     public function onPostUpdate(GenericEvent $event)
     {
-        $this->addFlashMessage('flash.entity.update', $event);
+        $this->addFlashMessage('update', $event);
     }
 
     /**
@@ -56,7 +59,7 @@ class CrudFlashbagListener
      */
     public function onPostRemove(GenericEvent $event)
     {
-        $this->addFlashMessage('flash.entity.remove', $event);
+        $this->addFlashMessage('remove', $event);
     }
 
     /**
@@ -79,14 +82,22 @@ class CrudFlashbagListener
      */
     protected function getMessage($message, GenericEvent $event)
     {
-        $entityTransDomain = 'messages';
-        $entityClass = $this->getEntityClass($event);
-        $entityClassLabel = $this->translator->trans(/** @Ignore */$entityClass.'.label', [], $entityTransDomain);
+        if ($this->customizedFlash) {
+            $entityClass = $this->getEntityClass($event);
+            $transDomain = 'messages';
+            $message = $this->translator->trans(/** @Ignore */'flash.'.$entityClass.'.'.$message, [], $transDomain);
+        } else {
+            $entityTransDomain = 'messages';
+            $entityClass = $this->getEntityClass($event);
+            $entityClassLabel = $this->translator->trans(/** @Ignore */$entityClass.'.label', [], $entityTransDomain);
 
-        $transDomain = 'EasyAdminBundle';
-        $messageParameters = array('%entity%' => $entityClassLabel);
+            $transDomain = 'EasyAdminBundle';
+            $messageParameters = array('%entity%' => $entityClassLabel);
 
-        return $this->translator->trans(/** @Ignore */$message, $messageParameters, $transDomain);
+            $message = $this->translator->trans(/** @Ignore */'flash.entity.'.$message, $messageParameters, $transDomain);
+        }
+
+        return $message;
     }
 
     /**
