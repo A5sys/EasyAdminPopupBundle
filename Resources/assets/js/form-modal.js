@@ -7,10 +7,14 @@ formModal = {};
 
 formModal.init = function (url)
 {
-    $('#modal .modal-content').load(url);
-    $('#modal').modal({
-        show: true,
-        backdrop :'static'
+    $('#modal .modal-content').load(url, function (url, data)
+    {
+        if (data !== 'error') {
+            $('#modal').modal({
+                show: true,
+                backdrop :'static'
+            });
+        }
     });
 };
 
