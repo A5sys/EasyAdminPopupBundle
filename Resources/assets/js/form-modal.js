@@ -52,7 +52,7 @@ formModal.initForm = function ()
     });
 
     //enable select2
-    $('select').select2();
+    $('select').select2({width: '100%'});
 };
 
 formModal.postForm = function ()
