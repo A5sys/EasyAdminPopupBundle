@@ -23,9 +23,9 @@
     {% endblock view_actions %}
     </div>
 </div>
+{% if easyadmin_action_is_enabled_for_list_view('search', _entity_config.name) %}
 <div class="row search">
     <div class="col-xs-12 col-sm-12">
-     {% if easyadmin_action_is_enabled_for_list_view('search', _entity_config.name) %}
         {% block search_action %}
             {% set _action = easyadmin_get_action_for_list_view('search', _entity_config.name) %}
             {% set searchUrl = searchForm.vars.action %}
@@ -52,9 +52,9 @@
                 </div>
             {{ form_end(searchForm) }}
         {% endblock search_action %}
-    {% endif %}
     </div>
 </div>
+{% endif %}
 {% endblock content_header %}
 
 {% block content %}
