@@ -24,4 +24,29 @@ class Configurator extends BaseConfigurator
 
         return $this->normalizeFieldsConfiguration('search', $entityConfiguration);
     }
+
+    /**
+     * Merges all the information about the fields associated with the given view
+     * to return the complete set of normalized field configuration.
+     *
+     * @param string $view
+     * @param array  $entityConfiguration
+     *
+     * @return array The complete field configuration
+     */
+    protected function normalizeFieldsConfiguration($view, $entityConfiguration)
+    {
+        $fieldsConfiguration = $entityConfiguration[$view]['fields'];
+
+        $configuration = parent::normalizeFieldsConfiguration($view, $entityConfiguration);
+
+        //override the sortable
+        foreach ($fieldsConfiguration as $fieldName => $fieldConfiguration) {
+            if (isset($fieldConfiguration['sortable'])) {
+                $configuration[$fieldName]['sortable'] = $fieldConfiguration['sortable'];
+            }
+        }
+
+        return $configuration;
+    }
 }

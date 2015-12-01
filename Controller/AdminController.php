@@ -256,12 +256,10 @@ class AdminController extends BaseAdminController
             $query = $this->em->createQueryBuilder()->select('entity')->from($entityClass, 'entity');
         }
 
-        if (null !== $sortField) {
-            if (empty($sortDirection) || !in_array(strtoupper($sortDirection), array('ASC', 'DESC'))) {
-                $sortDirection = 'DESC';
-            }
-
-            $query->orderBy('entity.'.$sortField, $sortDirection);
+        if (method_exists($this, $customMethodName = 'order'.ucfirst($this->entity['name']).'By')) {
+            $this->{$customMethodName}($query, $sortField, $sortDirection);
+        } else {
+            $this->orderBy($query, $sortField, $sortDirection);
         }
 
         $paginator = new Pagerfanta(new DoctrineORMAdapter($query, false));
@@ -269,6 +267,23 @@ class AdminController extends BaseAdminController
         $paginator->setCurrentPage($page);
 
         return $paginator;
+    }
+
+    /**
+     *
+     * @param QueryBuilder $query
+     * @param type         $sortField
+     * @param string       $sortDirection
+     */
+    protected function orderBy(QueryBuilder $query, $sortField = null, $sortDirection = null)
+    {
+        if (null !== $sortField) {
+            if (empty($sortDirection) || !in_array(strtoupper($sortDirection), array('ASC', 'DESC'))) {
+                $sortDirection = 'DESC';
+            }
+
+            $query->orderBy('entity.'.$sortField, $sortDirection);
+        }
     }
 
     /**
@@ -301,12 +316,10 @@ class AdminController extends BaseAdminController
             }
         }
 
-        if (!empty($sortField)) {
-            if (empty($sortDirection) || !in_array(strtoupper($sortDirection), array('ASC', 'DESC'))) {
-                $sortDirection = 'DESC';
-            }
-
-            $queryBuilder->orderBy('entity.'.$sortField, $sortDirection);
+        if (method_exists($this, $customMethodName = 'order'.ucfirst($this->entity['name']).'By')) {
+            $this->{$customMethodName}($query, $sortField, $sortDirection);
+        } else {
+            $this->orderBy($query, $sortField, $sortDirection);
         }
 
         $paginator = new Pagerfanta(new DoctrineORMAdapter($queryBuilder, false));
