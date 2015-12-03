@@ -4,6 +4,8 @@
 
 {% extends '@EasyAdminPopup/base_modal.html.twig' %}
 
+{% form_theme form with easyadmin_config('design.form_theme') %}
+
 {% block content %}
     {% block main %}
         {{ 'action.delete.confirm'|trans }}
