@@ -277,7 +277,7 @@ class AdminController extends BaseAdminController
      */
     protected function orderBy(QueryBuilder $query, $sortField = null, $sortDirection = null)
     {
-        if (null !== $sortField) {
+        if (!empty($sortField)) {
             if (empty($sortDirection) || !in_array(strtoupper($sortDirection), array('ASC', 'DESC'))) {
                 $sortDirection = 'DESC';
             }
@@ -301,9 +301,9 @@ class AdminController extends BaseAdminController
     protected function findBy($entityClass, $searchQuery, array $searchableFields, $page = 1, $maxPerPage = 15, $sortField = null, $sortDirection = null)
     {
         if (method_exists($this, $customMethodName = 'create'.$this->entity['name'].'QueryBuilder')) {
-            $queryBuilder = $this->{$customMethodName}($entityClass);
+            $query = $this->{$customMethodName}($entityClass);
         } else {
-            $queryBuilder = $this->em->createQueryBuilder()->select('entity')->from($entityClass, 'entity');
+            $query = $this->em->createQueryBuilder()->select('entity')->from($entityClass, 'entity');
         }
 
         foreach ($searchableFields as $name => $metadata) {
@@ -311,7 +311,7 @@ class AdminController extends BaseAdminController
                 $search = $searchQuery[$name];
 
                 if ($search !== null) {
-                    $this->addFilterToFindBy($queryBuilder, $metadata, $name, $search);
+                    $this->addFilterToFindBy($query, $metadata, $name, $search);
                 }
             }
         }
@@ -322,7 +322,7 @@ class AdminController extends BaseAdminController
             $this->orderBy($query, $sortField, $sortDirection);
         }
 
-        $paginator = new Pagerfanta(new DoctrineORMAdapter($queryBuilder, false));
+        $paginator = new Pagerfanta(new DoctrineORMAdapter($query, false));
         $paginator->setMaxPerPage($maxPerPage);
         $paginator->setCurrentPage($page);
 
