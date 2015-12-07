@@ -13,7 +13,7 @@ This bundle requires:
 
 # Installation
 
-        composer require a5sys/overlay-bundle
+        composer require a5sys/easyadminpopup-bundle
 
 In AppKernel.php
 
