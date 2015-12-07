@@ -25,21 +25,25 @@
 </div>
 {% if easyadmin_action_is_enabled_for_list_view('search', _entity_config.name) %}
 <div class="row search">
-    <div class="col-xs-12 col-sm-12">
-        {% block search_action %}
-            {% set _action = easyadmin_get_action_for_list_view('search', _entity_config.name) %}
-            {% set searchUrl = searchForm.vars.action %}
-            {{ form_start(searchForm) }}
-                <input type="hidden" name="action" value="search">
-                <input type="hidden" name="entity" value="{{ _request_parameters.entity }}">
-                <input type="hidden" name="sortField" value="{{ _request_parameters.sortField }}">
-                <input type="hidden" name="sortDirection" value="{{ _request_parameters.sortDirection }}">
-                {% for child in searchForm.children %}
-                        <div class="col-sm-4">
-                            {{ form_row(child) }}
-                        </div>
-                {% endfor %}
-                {{ form_rest(searchForm) }}
+    {% block search_action %}
+        <fieldset>
+            <legend>{{ 'action.search.legend'|trans(_trans_parameters, 'EasyAdminBundle') }}</legend>
+            <div class="col-xs-12 col-sm-12">
+                {% set _action = easyadmin_get_action_for_list_view('search', _entity_config.name) %}
+                {% set searchUrl = searchForm.vars.action %}
+                {{ form_start(searchForm) }}
+                    <input type="hidden" name="action" value="search">
+                    <input type="hidden" name="entity" value="{{ _request_parameters.entity }}">
+                    <input type="hidden" name="sortField" value="{{ _request_parameters.sortField }}">
+                    <input type="hidden" name="sortDirection" value="{{ _request_parameters.sortDirection }}">
+                    {% for child in searchForm.children %}
+                            <div class="col-sm-4">
+                                {{ form_row(child) }}
+                            </div>
+                    {% endfor %}
+                    {{ form_rest(searchForm) }}
+            </div>
+            <div class="col-xs-12 col-sm-12">
                 <div class="buttons pull-right">
                     <input type="submit" class="btn btn-search" value="{{ 'action.search.label'|trans(_trans_parameters, 'EasyAdminBundle') }}"></button>
                     {# reset filter redirecting to the list #}
@@ -49,10 +53,10 @@
                        data-original-title="{{ ("action.search_reset.tooltip")|trans(_trans_parameters, 'EasyAdminBundle') }}">
                         <i class="fa fa-undo"></i>
                     </a>
-                </div>
-            {{ form_end(searchForm) }}
-        {% endblock search_action %}
-    </div>
+            </div>
+        </fieldset>
+        {{ form_end(searchForm) }}
+    {% endblock search_action %}
 </div>
 {% endif %}
 {% endblock content_header %}

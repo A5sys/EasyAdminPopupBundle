@@ -6,6 +6,7 @@ flash:
 action:
     search:
         label: Rechercher
+        legend: Rechercher
     new:
         label: Nouveau
         validate: Valider
