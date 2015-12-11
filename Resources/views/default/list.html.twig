@@ -62,7 +62,7 @@
 {% endblock content_header %}
 
 {% block content %}
-    {% set _request_parameters = _request_parameters|default({})|merge({
+    {% set _request_parameters = app.request.query.all|default({})|merge({
         action: app.request.get('action'),
         search: app.request.get('search'),
         entity: _entity_config.name,
