@@ -23,7 +23,7 @@ use tbn\JsonAnnotationBundle\Configuration\Json;
 class AdminController extends BaseAdminController
 {
     /**
-     * @Route("/json/", name="admin_json")
+     * @Route("/json/", name="easyadmin_json")
      *
      * @param Request $request
      *
@@ -220,6 +220,10 @@ class AdminController extends BaseAdminController
         $fields = $this->entity['list']['fields'];
         $paginator = $this->findAll($this->entity['class'], $this->request->query->get('page', 1), $this->config['list']['max_results'], $this->request->query->get('sortField'), $this->request->query->get('sortDirection'));
 
+        //add url parameter as hidden input in the search form
+        $urlParameters = $this->getUrlParameters('search');
+        $this->request->request->set('extraParameters', $urlParameters);
+
         $this->dispatch(EasyAdminEvents::POST_LIST, array('paginator' => $paginator));
 
         if (method_exists($this, $customMethodName = 'create'.$this->entity['name'].'SearchForm')) {
@@ -232,6 +236,7 @@ class AdminController extends BaseAdminController
             'paginator' => $paginator,
             'fields'    => $fields,
             'searchForm' => $searchForm->createView(),
+            'delete_form_template' => $this->createDeleteForm($this->entity['name'], '__id__')->createView(),
         ));
     }
 
@@ -309,13 +314,11 @@ class AdminController extends BaseAdminController
         foreach ($searchableFields as $name => $metadata) {
             if (isset($searchQuery[$name])) {
                 $search = $searchQuery[$name];
-
                 if ($search !== null) {
                     $this->addFilterToFindBy($query, $metadata, $name, $search);
                 }
             }
         }
-
         if (method_exists($this, $customMethodName = 'order'.ucfirst($this->entity['name']).'By')) {
             $this->{$customMethodName}($query, $sortField, $sortDirection);
         } else {
@@ -348,7 +351,6 @@ class AdminController extends BaseAdminController
             }
 
             $id = $search->getId();
-            $queryBuilder->leftJoin('entity.'.$name, $associationName);
             $queryBuilder->andWhere($associationName.'.id = :'.$name);
             $queryBuilder->setParameter($name, $id);
         } elseif (in_array($metadata['type'], array('text', 'string'))) {
@@ -377,6 +379,10 @@ class AdminController extends BaseAdminController
             $searchForm =  $this->createSearchForm();
         }
 
+        //add url parameter as hidden input in the search form
+        $urlParameters = $this->getUrlParameters('search');
+        $this->request->request->set('extraParameters', $urlParameters);
+
         $searchForm->handleRequest($this->request);
         $searchData = $searchForm->getData();
 
@@ -398,6 +404,7 @@ class AdminController extends BaseAdminController
             'paginator' => $paginator,
             'fields'    => $fields,
             'searchForm' => $searchForm->createView(),
+            'delete_form_template' => $this->createDeleteForm($this->entity['name'], '__id__')->createView(),
         ));
     }
 
@@ -425,13 +432,6 @@ class AdminController extends BaseAdminController
 
         foreach ($entityProperties as $name => $metadata) {
             $this->addSearchFormField($name, $metadata, $formBuilder);
-        }
-
-        //add url parameter as hidden input in the search form
-        $urlParameters = $this->getUrlParameters('search');
-
-        foreach ($urlParameters as $urlParameter => $value) {
-            $formBuilder->add($urlParameter, 'hidden', ['data' => $value]);
         }
 
         $url = $this->getSearchFormUrl();
@@ -532,7 +532,6 @@ class AdminController extends BaseAdminController
         }
 
         $formFieldOptions['attr']['field_type'] = $fieldType;
-        $formFieldOptions['attr']['field_css_class'] = $metadata['class'];
         $formFieldOptions['attr']['field_help'] = $metadata['help'];
         $formFieldOptions['required'] = false;
 
@@ -546,110 +545,31 @@ class AdminController extends BaseAdminController
     }
 
     /**
-     * Creates the form used to create or edit an entity.
+     * Retrieves the list of form options before sending them to the form builder.
+     * This allows adding dynamic logic to the default form options.
      *
      * @param object $entity
-     * @param array  $entityProperties
-     * @param string $view             The name of the view where this form is used ('new' or 'edit')
+     * @param string $view
      *
-     * @return Form
+     * @return array
      */
-    protected function createEntityForm($entity, array $entityProperties, $view)
+    protected function getEntityFormOptions($entity, $view)
     {
-        if (method_exists($this, $customMethodName = 'create'.$this->entity['name'].'EntityForm')) {
-            $form = $this->{$customMethodName}($entity, $entityProperties, $view);
-            if (!$form instanceof FormInterface) {
-                throw new \LogicException(sprintf(
-                    'The "%s" method must return a FormInterface, "%s" given.',
-                    $customMethodName,
-                    \is_object($form) ? \get_class($form) : \gettype($form)
-                ));
-            }
+        $formOptions = $this->entity[$view]['form_options'];
+        $formOptions['entity'] = $this->entity['name'];
+        $formOptions['view'] = $view;
 
-            return $form;
+        $urlParameters = $this->getUrlParameters($view);
+
+        $entityId = $entity->getId();
+
+        if (null !== $entityId) {
+            $urlParameters['id'] = $entityId;
         }
+        $url = $this->generateUrl($this->getJsonRouteName(), $urlParameters);
+        $formOptions['action'] = $url;
 
-        if (method_exists($this, $customBuilderMethodName = 'create'.$this->entity['name'].'EntityFormBuilder')) {
-            $formBuilder = $this->{$customBuilderMethodName}($entity, $entityProperties, $view);
-        } else {
-            $formBuilder = $this->createEntityFormBuilder($entity, $view);
-
-            $urlParameters = array(
-                'action' => $view,
-                'entity' => $this->entity['name'],
-            );
-
-            if ($view === 'edit') {
-                $urlParameters['id'] = $entity->getId();
-            }
-
-            $url = $this->generateUrl($this->getJsonRouteName(), $urlParameters);
-
-            $formBuilder->setAction($url);
-
-            //added
-            foreach ($entityProperties as $name => $metadata) {
-                $this->createEntityFormField($formBuilder, $name, $metadata);
-            }
-        }
-
-        if (!$formBuilder instanceof FormBuilderInterface) {
-            throw new \LogicException(sprintf(
-                'The "%s" method must return a FormBuilderInterface, "%s" given.',
-                'createEntityForm',
-                \is_object($formBuilder) ? \get_class($formBuilder) : \gettype($formBuilder)
-            ));
-        }
-
-        return $formBuilder->getForm();
-    }
-
-    /**
-     * Create a field for a create form
-     *
-     * @param FormBuilder $formBuilder
-     * @param string        $name
-     * @param array       $metadata
-     * @return null
-     */
-    protected function createEntityFormField(FormBuilder $formBuilder, $name, array $metadata)
-    {
-        $formFieldOptions = array();
-
-        $fieldType = $metadata['fieldType'];
-
-        if ('association' === $formFieldOptions && in_array($metadata['associationType'], array(ClassMetadataInfo::ONE_TO_MANY, ClassMetadataInfo::MANY_TO_MANY))) {
-            return;
-        }
-
-        if ('collection' === $formFieldOptions) {
-            $formFieldOptions = array('allow_add' => true, 'allow_delete' => true);
-
-            if (version_compare(\Symfony\Component\HttpKernel\Kernel::VERSION, '2.5.0', '>=')) {
-                $formFieldOptions['delete_empty'] = true;
-            }
-        }
-
-        //if the repeated options has been activated
-        if (isset($metadata['repeated']) && (true === $metadata['repeated'])) {
-            $fieldType = 'repeated';
-            $formFieldOptions = $this->getFieldRepeatedOptions($metadata);
-        }
-
-        if ('date' === $fieldType) {
-            $fieldType = null;
-            $formFieldOptions = array(
-                'widget' => 'single_text',
-                'datepicker' => true,
-            );
-        }
-
-        $formFieldOptions['attr']['field_type'] = $fieldType;
-
-        $formFieldOptions['attr']['field_css_class'] = $metadata['class'];
-        $formFieldOptions['attr']['field_help'] = $metadata['help'];
-
-        $formBuilder->add($name, $fieldType, $formFieldOptions);
+        return $formOptions;
     }
 
     /**
@@ -688,7 +608,7 @@ class AdminController extends BaseAdminController
      */
     protected function getJsonRouteName()
     {
-        return 'admin_json';
+        return 'easyadmin_json';
     }
 
     /**
@@ -697,7 +617,7 @@ class AdminController extends BaseAdminController
      */
     protected function getAdminRouteName()
     {
-        return 'admin';
+        return 'easyadmin';
     }
 
     /**

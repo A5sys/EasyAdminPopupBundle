@@ -29,3 +29,10 @@ services:
             - "%easy_admin_popup.layout%"
         tags:
             - { name: twig.extension }
+
+    easyadminpopup.form.type.configurator.date:
+        class: "A5sys\\EasyAdminPopupBundle\\Form\\Type\\Configurator\\DateTypeConfigurator"
+        arguments:
+            - "%easy_admin_popup.layout%"
+        tags:
+            - { name: easyadmin.form.type.configurator, priority: "-130" }

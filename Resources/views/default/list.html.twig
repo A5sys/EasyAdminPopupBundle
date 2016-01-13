@@ -34,6 +34,10 @@
             <div class="col-xs-12 col-sm-12">
                     <input type="hidden" name="sortField" value="{{ _request_parameters.sortField }}">
                     <input type="hidden" name="sortDirection" value="{{ _request_parameters.sortDirection }}">
+                    {% for key, parameter in app.request.request.get('extraParameters') %}
+                        <input type="hidden" name="{{ key }}" value="{{ parameter }}">
+                    {% endfor %}
+
                     {% for child in searchForm.children %}
                             <div class="col-sm-4">
                                 {{ form_row(child) }}
