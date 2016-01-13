@@ -60,7 +60,7 @@ class AdminController extends BaseAdminController
         $url = $this->getFormUrl($options);
 
         if ($url !== null) {
-             $formBuilder->setAction($url);
+            $formBuilder->setAction($url);
         }
 
         return $formBuilder;
@@ -87,10 +87,9 @@ class AdminController extends BaseAdminController
             list($view)  = explode('-', $formId);
             $id = $this->request->query->get('id');
             //custom URL for ajax
-            $urlParameters = array(
-                'action' => $view,
-                'entity' => $this->entity['name'],
-                'id' => $id,
+            $urlParameters = array_merge(
+                $this->getUrlParameters($view),
+                ['id' => $id]
             );
 
             $url = $this->generateUrl($this->getJsonRouteName(), $urlParameters);
@@ -191,7 +190,8 @@ class AdminController extends BaseAdminController
 
                 $this->dispatch(EasyAdminEvents::POST_REMOVE, array('entity' => $entity));
 
-                $return = $this->redirect($this->generateUrl($this->getAdminRouteName(), array('action' => 'list', 'entity' => $this->entity['name'])));
+                $urlParameters = $this->getUrlParameters('list');
+                $return = $this->redirect($this->generateUrl($this->getAdminRouteName(), $urlParameters));
             } else {
                 throw new \LogicException('The delete form is not valid');
             }
@@ -428,7 +428,7 @@ class AdminController extends BaseAdminController
         }
 
         //add url parameter as hidden input in the search form
-        $urlParameters = $this->getUrlParameters();
+        $urlParameters = $this->getUrlParameters('search');
 
         foreach ($urlParameters as $urlParameter => $value) {
             $formBuilder->add($urlParameter, 'hidden', ['data' => $value]);
@@ -479,7 +479,7 @@ class AdminController extends BaseAdminController
      */
     protected function getSearchFormUrl()
     {
-        $urlParameters = $this->getUrlParameters();
+        $urlParameters = $this->getUrlParameters('search');
 
         if (method_exists($this, $customMethodName = 'generate'.ucfirst($this->entity['name']).'Url')) {
             $url = $this->{$customMethodName}($this->getAdminRouteName(), $urlParameters);
@@ -495,10 +495,10 @@ class AdminController extends BaseAdminController
      *
      * @return strin The url
      */
-    protected function getUrlParameters()
+    protected function getUrlParameters($action)
     {
         $urlParameters = array(
-            'action' => 'search',
+            'action' => $action,
             'entity' => $this->entity['name'],
         );
 
@@ -664,10 +664,7 @@ class AdminController extends BaseAdminController
             return sprintf('theme-%s %s', strtolower(str_replace('.html.twig', '', basename($formTheme))), $previousClass);
         });
 
-        $urlParameters = array(
-            'action' => $view,
-            'entity' => $this->entity['name'],
-        );
+        $urlParameters = $this->getUrlParameters($view);
 
         if ($view === 'edit') {
             $urlParameters['id'] = $entity->getId();
@@ -701,5 +698,39 @@ class AdminController extends BaseAdminController
     protected function getAdminRouteName()
     {
         return 'admin';
+    }
+
+    /**
+     * The method that is executed when the user performs a 'edit' action on an entity.
+     *
+     * @return RedirectResponse|Response
+     */
+    protected function editAction()
+    {
+        $adminResponse = parent::editAction();
+
+        if ($adminResponse instanceof RedirectResponse) {
+            $url = $this->generateUrl($this->getAdminRouteName(), $this->getUrlParameters('list'));
+            $adminResponse->setTargetUrl($url);
+        }
+
+        return $adminResponse;
+    }
+
+    /**
+     * The method that is executed when the user performs a 'new' action on an entity.
+     *
+     * @return RedirectResponse|Response
+     */
+    protected function newAction()
+    {
+        $adminResponse = parent::newAction();
+
+        if ($adminResponse instanceof RedirectResponse) {
+            $url = $this->generateUrl($this->getAdminRouteName(), $this->getUrlParameters('list'));
+            $adminResponse->setTargetUrl($url);
+        }
+
+        return $adminResponse;
     }
 }
