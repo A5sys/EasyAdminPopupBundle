@@ -419,12 +419,19 @@ class AdminController extends BaseAdminController
             return sprintf('theme-%s %s', strtolower(str_replace('.html.twig', '', basename($formTheme))), $previousClass);
         });
 
-        $formBuilder = $this->get('form.factory')->createNamedBuilder('search', 'form', array(
+        $formBuilder = $this->get('form.factory')->createNamedBuilder(null, 'form', array(
             'attr' => array('class' => $formCssClass, 'id' => $view.'-form'),
         ));
 
         foreach ($entityProperties as $name => $metadata) {
             $this->addSearchFormField($name, $metadata, $formBuilder);
+        }
+
+        //add url parameter as hidden input in the search form
+        $urlParameters = $this->getUrlParameters();
+
+        foreach ($urlParameters as $urlParameter => $value) {
+            $formBuilder->add($urlParameter, 'hidden', ['data' => $value]);
         }
 
         $url = $this->getSearchFormUrl();
@@ -472,12 +479,34 @@ class AdminController extends BaseAdminController
      */
     protected function getSearchFormUrl()
     {
+        $urlParameters = $this->getUrlParameters();
+
+        if (method_exists($this, $customMethodName = 'generate'.ucfirst($this->entity['name']).'Url')) {
+            $url = $this->{$customMethodName}($this->getAdminRouteName(), $urlParameters);
+        } else {
+            $url = $this->generateUrl($this->getAdminRouteName(), $urlParameters);
+        }
+
+        return $url;
+    }
+
+    /**
+     * Get the url for a search form
+     *
+     * @return strin The url
+     */
+    protected function getUrlParameters()
+    {
         $urlParameters = array(
             'action' => 'search',
             'entity' => $this->entity['name'],
         );
 
-        return $this->generateUrl($this->getAdminRouteName(), $urlParameters);
+        if (method_exists($this, $customMethodName = 'get'.ucfirst($this->entity['name']).'UrlParameters')) {
+            $urlParameters = $this->{$customMethodName}($urlParameters);
+        }
+
+        return $urlParameters;
     }
 
     /**
@@ -530,7 +559,7 @@ class AdminController extends BaseAdminController
         if (method_exists($this, $customMethodName = 'create'.$this->entity['name'].'EntityForm')) {
             $form = $this->{$customMethodName}($entity, $entityProperties, $view);
             if (!$form instanceof FormInterface) {
-                throw new \Exception(sprintf(
+                throw new \LogicException(sprintf(
                     'The "%s" method must return a FormInterface, "%s" given.',
                     $customMethodName,
                     \is_object($form) ? \get_class($form) : \gettype($form)
@@ -565,7 +594,7 @@ class AdminController extends BaseAdminController
         }
 
         if (!$formBuilder instanceof FormBuilderInterface) {
-            throw new \Exception(sprintf(
+            throw new \LogicException(sprintf(
                 'The "%s" method must return a FormBuilderInterface, "%s" given.',
                 'createEntityForm',
                 \is_object($formBuilder) ? \get_class($formBuilder) : \gettype($formBuilder)
