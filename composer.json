@@ -7,12 +7,6 @@
     "license": "MIT",
     "require": {
         "tbn/json-annotation-bundle"    : ">=1.2",
-        "javiereguiluz/easyadmin-bundle": "dev-master-tbn"
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url":  "git@github.com:thomasbeaujean/EasyAdminBundle.git"
-        }
-    ]
+        "javiereguiluz/easyadmin-bundle": "dev-master"
+    }
 }
