@@ -44,9 +44,7 @@ class EntityTranslation
         }
 
         //avoid doublons
-        $uniqueLabels = array_unique($labels);
-
-        return $uniqueLabels;
+        return array_unique($labels);
     }
 
     /**
@@ -56,9 +54,7 @@ class EntityTranslation
      */
     protected function getEntities()
     {
-        $entities = array_keys($this->backendConfiguration['entities']);
-
-        return $entities;
+        return array_keys($this->backendConfiguration['entities']);
     }
 
     /**
@@ -78,9 +74,7 @@ class EntityTranslation
             $labels = array_merge($labels, $viewLabels);
         }
 
-        $uniqueLabels = array_unique($labels);
-
-        return $uniqueLabels;
+        return array_unique($labels);
     }
 
     /**
@@ -99,7 +93,10 @@ class EntityTranslation
 
             foreach ($fieldsConfiguration as $configuration) {
                 $label = $configuration['label'];
-                $labels[] = $label;
+
+                if (!empty($label)) {
+                    $labels[] = $label;
+                }
             }
         }
 
