@@ -76,7 +76,11 @@ formModal.postForm = function ()
             var redirect = data.redirect;
 
             if (redirect !== null) {
+                if (redirect === '#') {
+                    location.reload(true);
+                } else {
                     window.location.replace(redirect);
+                }
             } else {
                 $("#modal .modal-content").html(html);
             }
