@@ -323,14 +323,21 @@ class AdminController extends BaseAdminController
             $query = $this->em->createQueryBuilder()->select('entity')->from($entityClass, 'entity');
         }
 
-        foreach ($searchableFields as $name => $metadata) {
-            if (isset($searchQuery[$name])) {
-                $search = $searchQuery[$name];
-                if ($search !== null) {
-                    $this->addFilterToFindBy($query, $metadata, $name, $search);
+        foreach ($searchQuery as $searchname => $searchValue) {
+            if (!empty($searchValue)) {
+                if (!isset($searchableFields[$searchname])) {
+                    throw new \LogicException('The search field '.$searchname.' is not in the list of search fields');
+                }
+
+                $metadata = $searchableFields[$searchname];
+                if (method_exists($this, $customMethodName = 'add'.ucfirst($this->entity['name']).'FilterToFindBy')) {
+                    $this->{$customMethodName}($query, $metadata, $searchname, $searchValue);
+                } else {
+                    $this->addFilterToFindBy($query, $metadata, $searchname, $searchValue);
                 }
             }
         }
+
         if (method_exists($this, $customMethodName = 'order'.ucfirst($this->entity['name']).'By')) {
             $this->{$customMethodName}($query, $sortField, $sortDirection);
         } else {
@@ -431,16 +438,9 @@ class AdminController extends BaseAdminController
      */
     protected function createSearchForm()
     {
-        $view = 'search';
         $entityProperties = $this->entity['search']['fields'];
 
-        $formCssClass = array_reduce($this->config['design']['form_theme'], function ($previousClass, $formTheme) {
-            return sprintf('theme-%s %s', strtolower(str_replace('.html.twig', '', basename($formTheme))), $previousClass);
-        });
-
-        $formBuilder = $this->get('form.factory')->createNamedBuilder(null, 'form', array(
-            'attr' => array('class' => $formCssClass, 'id' => $view.'-form'),
-        ));
+        $formBuilder = $this->get('form.factory')->createNamedBuilder('search', 'form', array());
 
         foreach ($entityProperties as $name => $metadata) {
             $this->addSearchFormField($name, $metadata, $formBuilder);
