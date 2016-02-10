@@ -287,7 +287,19 @@ class AdminController extends BaseAdminController
                 $sortDirection = 'DESC';
             }
 
-            $query->orderBy('entity.'.$sortField, $sortDirection);
+            $isVirtual = $querySort = $this->entity['list']['fields'][$sortField]['virtual'];
+            $fieldType = $querySort = $this->entity['list']['fields'][$sortField]['fieldType'];
+
+            if ($fieldType === 'entity' || $isVirtual) {
+                if (!isset($this->entity['list']['fields'][$sortField]['querySort'])) {
+                    throw new \LogicException('The property '.$sortField.' requires a querySort');
+                }
+                $querySort = $this->entity['list']['fields'][$sortField]['querySort'];
+            } else {
+                $querySort = 'entity.'.$sortField;
+            }
+
+            $query->orderBy($querySort, $sortDirection);
         }
     }
 
