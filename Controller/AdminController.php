@@ -405,6 +405,11 @@ class AdminController extends BaseAdminController
         $searchForm->handleRequest($this->request);
         $searchData = $searchForm->getData();
 
+        //there might be no data
+        if ($searchData === null) {
+            $searchData = [];
+        }
+
         if (method_exists($this, $customMethodName = 'find'.ucfirst($this->entity['name']).'By')) {
             $paginator = $this->{$customMethodName}($this->entity['class'], $searchData, $searchableFields, $this->request->query->get('page', 1), $this->config['list']['max_results'], $this->request->query->get('sortField'), $this->request->query->get('sortDirection'));
         } else {
