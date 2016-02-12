@@ -141,8 +141,12 @@ class AdminController extends BaseAdminController
      */
     protected function createDeleteForm($entityName, $entityId)
     {
+        $urlParameters = $this->getUrlParameters('delete');
+        $urlParameters['id'] = $entityId;
+        $url = $this->generateUrl($this->getJsonRouteName(), $urlParameters);
+
         return $this->createFormBuilder()
-            ->setAction($this->generateUrl($this->getJsonRouteName(), array('action' => 'delete', 'entity' => $entityName, 'id' => $entityId)))
+            ->setAction($url)
             ->setMethod('DELETE')
             ->getForm()
         ;
