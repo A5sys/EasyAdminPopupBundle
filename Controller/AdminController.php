@@ -328,7 +328,8 @@ class AdminController extends BaseAdminController
         }
 
         foreach ($searchQuery as $searchname => $searchValue) {
-            if (!empty($searchValue)) {
+            //0 is a false positiv with the empty method
+            if ($searchValue !== null && $searchValue !== '') {
                 if (!isset($searchableFields[$searchname])) {
                     throw new \LogicException('The search field '.$searchname.' is not in the list of search fields');
                 }
