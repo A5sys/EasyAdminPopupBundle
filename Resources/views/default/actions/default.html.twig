@@ -1,5 +1,5 @@
 {% if 'method' == _action.type %}
-    {% set _action_href = path('admin', _request_parameters|merge({ action: _action.name, id: _item_id })) %}
+    {% set _action_href = path('easyadmin', _request_parameters|merge({ action: _action.name, id: _item_id })) %}
 {% elseif 'route' == _action.type %}
     {% set _action_href = path(_action.name, _request_parameters|merge({ action: _action.name, id: _item_id })) %}
 {% endif %}
@@ -14,5 +14,5 @@
         href='#'
         onClick="formModal.init('{{ _action_href }}')">
     {% endif %}
-    <i class="fa fa-{{ action.icon }}"></i>
+    {%- if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif -%}
 </a>

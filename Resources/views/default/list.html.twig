@@ -90,20 +90,17 @@
 {% endblock %}
 
 {% block item_actions %}
-    {% spaceless %}
-        {% for _action in _list_item_actions %}
-            {% embed '@EasyAdminPopup/default/actions/default.html.twig' with {action:  _action, id: _item_id} %} {% endembed %}
-        {% endfor %}
-
-        {% set _action_href = path('admin', _request_parameters|merge({ action: 'delete', id: _item_id })) %}
-
-        <a onClick="formModal.init('{{ _action_href }}')"
-           href='#'
-            data-toggle="tooltip"
-            data-placement="right"
-            class='btn-delete'
-            data-original-title="{{ ("action.delete.tooltip")|trans(_trans_parameters) }}">
-            <i class="fa fa-remove"></i>
-        </a>
-    {% endspaceless %}
+    {{ include('@EasyAdminPopup/default/includes/_actions.html.twig', {
+        actions: _list_item_actions,
+        request_parameters: _request_parameters,
+        trans_parameters: _trans_parameters,
+        item_id: _item_id
+    }, with_context = false) }}
 {% endblock item_actions %}
+
+{% block delete_form %}
+{% endblock delete_form %}
+
+
+{% block body_javascript %}
+{% endblock %}
