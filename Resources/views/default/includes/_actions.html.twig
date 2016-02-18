@@ -7,7 +7,7 @@
         {% set action_href = path(action.name, request_parameters|merge({ action: action.name, id: item_id })) %}
     {% endif %}
 
-    <a class="{{ action.css_class|default('') }}" href="#" onClick="formModal.init('{{ _action_href }}')">
+    <a class="{{ action.css_class|default('') }} btn-{{ action.name }}" href="#" onClick="formModal.init('{{ action_href }}')">
         {%- if action.icon %}<i class="fa fa-{{ action.icon }}"></i> {% endif -%}
         {%- if action.label is defined and not action.label is empty -%}
             {{ action.label|trans(trans_parameters|merge({ '%entity_id%': item_id }), 'messages') }}

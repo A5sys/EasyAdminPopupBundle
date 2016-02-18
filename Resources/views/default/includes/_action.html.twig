@@ -1,0 +1,11 @@
+<a class="{{ css_class|default('') }} btn-{{ action }}"
+   href="#"
+   data-toggle="tooltip"
+   data-placement="left"
+   data-original-title="{{ ("action." ~ action ~".tooltip")|trans }}"
+   onClick="formModal.init('{{ _action_href }}')">
+    {%- if icon %}<i class="fa fa-{{ icon }}"></i> {% endif -%}
+    {%- if label is defined and not label is empty -%}
+        {{ label|trans(trans_parameters|merge({ '%entity_id%': item_id }), 'messages') }}
+    {%- endif -%}
+</a>
