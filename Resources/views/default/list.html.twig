@@ -107,3 +107,8 @@
         </a>
     {% endspaceless %}
 {% endblock item_actions %}
+
+{% block table_head %}
+    {% set _request_parameters = _request_parameters|merge({ referer: null }) %}
+    {{ parent() }}
+{% endblock table_head %}
