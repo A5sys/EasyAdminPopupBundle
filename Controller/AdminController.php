@@ -9,6 +9,9 @@ use JavierEguiluz\Bundle\EasyAdminBundle\Event\EasyAdminEvents;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Bridge\Doctrine\Form\Type\DateType;
 use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -450,7 +453,7 @@ class AdminController extends BaseAdminController
     {
         $entityProperties = $this->entity['search']['fields'];
 
-        $formBuilder = $this->get('form.factory')->createNamedBuilder('search', 'form', array());
+        $formBuilder = $this->get('form.factory')->createNamedBuilder('search', FormType::class, array());
 
         foreach ($entityProperties as $name => $metadata) {
             $this->addSearchFormField($name, $metadata, $formBuilder);
@@ -481,17 +484,46 @@ class AdminController extends BaseAdminController
 
         if ($addField) {
             if (isset($metadata['targetEntity']) && $metadata['targetEntity'] !== null) {
-                $fieldType = 'entity';
+                $fieldType = EntityType::class;
             } elseif ('date' === $metadata['type']) {
-                $fieldType = 'date';
+                $fieldType = DateType::class;
             } else {
-                $fieldType = $metadata['fieldType'];
+                $fieldType = $this->getFormTypeFqcn($metadata['fieldType']);
             }
 
             $formFieldOptions = $this->getSearchFormFieldOptions($name, $metadata, $fieldType);
 
             $formBuilder->add($name, $fieldType, $formFieldOptions);
         }
+    }
+
+    /**
+     * It returns the FQCN of the given short type.
+     * Example: 'text' -> 'Symfony\Component\Form\Extension\Core\Type\TextType'
+     *
+     * @param string $shortType
+     *
+     * @return string
+     */
+    protected function getFormTypeFqcn($shortType)
+    {
+        $typeNames = array(
+            'base', 'birthday', 'button', 'checkbox', 'choice', 'collection',
+            'country', 'currency', 'datetime', 'date', 'email', 'file', 'form',
+            'hidden', 'integer', 'language', 'money', 'number', 'password',
+            'percent', 'radio', 'repeated', 'reset', 'search', 'submit',
+            'textarea', 'text', 'time', 'timezone', 'url',
+        );
+
+        if (!in_array($shortType, $typeNames)) {
+            return $shortType;
+        }
+
+        // take into account the irregular class name for 'datetime' type
+        $typeClassName = 'datetime' === $shortType ? 'DateTime' : ucfirst($shortType);
+        $typeFqcn = sprintf('Symfony\\Component\\Form\\Extension\\Core\\Type\\%sType', $typeClassName);
+
+        return $typeFqcn;
     }
 
     /**
