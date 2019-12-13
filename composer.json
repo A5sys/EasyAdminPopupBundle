@@ -7,7 +7,7 @@
     "license": "MIT",
     "require": {
         "tbn/json-annotation-bundle"    : ">=1.2",
-        "easycorp/easyadmin-bundle": "v1.9.5.2"
+        "easycorp/easyadmin-bundle": "^1.9.5.2"
     },
     "repositories": [
             {
