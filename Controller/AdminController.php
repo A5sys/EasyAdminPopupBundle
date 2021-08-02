@@ -56,7 +56,7 @@ class AdminController extends BaseAdminController
      * @param array $options
      * @return type
      */
-    public function createFormBuilder($data = null, array $options = array())
+    public function createFormBuilder($data = null, array $options = []): FormBuilderInterface
     {
         $formBuilder = parent::createFormBuilder($data, $options);
 
