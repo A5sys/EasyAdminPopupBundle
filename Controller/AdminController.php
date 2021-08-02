@@ -183,7 +183,7 @@ class AdminController extends BaseAdminController
         if ('DELETE' === $this->request->getMethod()) {
             $this->dispatch(EasyAdminEvents::PRE_DELETE);
 
-            if ($form->isValid()) {
+            if ($form->isSubmitted() && $form->isValid()) {
                 $this->dispatch(EasyAdminEvents::PRE_REMOVE, array('entity' => $entity));
 
                 if (method_exists($this, $customMethodName = 'preRemove'.$this->entity['name'].'Entity')) {
